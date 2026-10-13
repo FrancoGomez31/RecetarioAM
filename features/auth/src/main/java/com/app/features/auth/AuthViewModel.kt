@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.core.domain.AppResult
 import com.app.core.domain.AuthRepository
+import com.app.core.domain.DomainError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,15 +21,15 @@ class AuthViewModel(
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     fun onEmailChange(email: String) {
-        _uiState.update { it.copy(email = email, errorMessage = null) }
+        _uiState.update { it.copy(email = email, error = null) }
     }
 
     fun onPasswordChange(password: String) {
-        _uiState.update { it.copy(password = password, errorMessage = null) }
+        _uiState.update { it.copy(password = password, error = null) }
     }
 
     fun onModeChange(mode: AuthMode) {
-        _uiState.update { it.copy(mode = mode, errorMessage = null) }
+        _uiState.update { it.copy(mode = mode, error = null) }
     }
 
     fun onSubmit() {
@@ -36,15 +37,15 @@ class AuthViewModel(
         if (state.isLoading) return
 
         if (!state.email.contains("@")) {
-            _uiState.update { it.copy(errorMessage = "Ingresá un correo válido") }
+            _uiState.update { it.copy(error = DomainError.InvalidEmail) }
             return
         }
         if (state.password.length < 6) {
-            _uiState.update { it.copy(errorMessage = "La contraseña debe tener al menos 6 caracteres") }
+            _uiState.update { it.copy(error = DomainError.WeakPassword) }
             return
         }
 
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        _uiState.update { it.copy(isLoading = true, error = null) }
 
         viewModelScope.launch {
             val result = when (state.mode) {
@@ -56,7 +57,7 @@ class AuthViewModel(
                     it.copy(isLoading = false, isAuthenticated = true)
                 }
                 is AppResult.Error -> _uiState.update {
-                    it.copy(isLoading = false, errorMessage = result.message)
+                    it.copy(isLoading = false, error = result.error)
                 }
             }
         }

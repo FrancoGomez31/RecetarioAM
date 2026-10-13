@@ -2,6 +2,7 @@ package com.app.core.data
 
 import com.app.core.domain.AppResult
 import com.app.core.domain.AuthRepository
+import com.app.core.domain.DomainError
 import com.app.core.domain.User
 
 // Implementación temporal en memoria. Se reemplaza por Firebase más adelante.
@@ -13,10 +14,8 @@ class FakeAuthRepository : AuthRepository {
     override fun getCurrentUser(): User? = currentUser
 
     override suspend fun signIn(email: String, password: String): AppResult<User> {
-        val savedPassword = accounts[email]
-            ?: return AppResult.Error("No existe una cuenta con ese correo")
-        if (savedPassword != password) {
-            return AppResult.Error("Contraseña incorrecta")
+        if (accounts[email] != password) {
+            return AppResult.Error(DomainError.InvalidCredentials)
         }
         val user = User(id = email, email = email)
         currentUser = user
@@ -25,7 +24,7 @@ class FakeAuthRepository : AuthRepository {
 
     override suspend fun signUp(email: String, password: String): AppResult<User> {
         if (accounts.containsKey(email)) {
-            return AppResult.Error("Ya existe una cuenta con ese correo")
+            return AppResult.Error(DomainError.EmailAlreadyInUse)
         }
         accounts[email] = password
         val user = User(id = email, email = email)

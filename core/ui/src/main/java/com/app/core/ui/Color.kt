@@ -1,5 +1,4 @@
 package com.app.core.ui
-
 import androidx.compose.ui.graphics.Color
 
 val Cream = Color(0xFFFAF3E8)

@@ -1,5 +1,6 @@
 package com.app.features.recipes
 
+import com.app.core.domain.DomainError
 import com.app.core.domain.Recipe
 import com.app.core.domain.Visibility
 
@@ -14,7 +15,7 @@ data class RecipesUiState(
     val query: String = "",
     val filter: RecipeFilter = RecipeFilter.ALL,
     val isLoading: Boolean = true,
-    val errorMessage: String? = null
+    val error: DomainError? = null
 ) {
     val totalCount: Int
         get() = recipes.size

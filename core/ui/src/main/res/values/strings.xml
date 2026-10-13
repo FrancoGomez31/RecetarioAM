@@ -1,0 +1,10 @@
+<resources>
+    <string name="core_ui_error_invalid_email">Ingresá un correo válido</string>
+    <string name="core_ui_error_weak_password">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="core_ui_error_invalid_credentials">Correo o contraseña incorrectos</string>
+    <string name="core_ui_error_email_in_use">Ya existe una cuenta con ese correo</string>
+    <string name="core_ui_error_network">No se pudo conectar. Revisá tu conexión e intentá de nuevo.</string>
+    <string name="core_ui_error_not_found">No encontramos lo que buscás.</string>
+    <string name="core_ui_error_unauthenticated">Tu sesión venció. Iniciá sesión de nuevo.</string>
+    <string name="core_ui_error_unknown">Algo salió mal. Intentá de nuevo.</string>
+</resources>

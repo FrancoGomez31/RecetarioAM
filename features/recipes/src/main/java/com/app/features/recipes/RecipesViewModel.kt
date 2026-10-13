@@ -22,14 +22,14 @@ class RecipesViewModel(
     }
 
     fun loadRecipes() {
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        _uiState.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
             when (val result = recipeRepository.getRecipes()) {
                 is AppResult.Success -> _uiState.update {
                     it.copy(recipes = result.data, isLoading = false)
                 }
                 is AppResult.Error -> _uiState.update {
-                    it.copy(isLoading = false, errorMessage = result.message)
+                    it.copy(isLoading = false, error = result.error)
                 }
             }
         }

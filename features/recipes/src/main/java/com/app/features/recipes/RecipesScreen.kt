@@ -34,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.core.domain.Recipe
 import com.app.core.domain.Visibility
 import com.app.core.ui.RecetarioTheme
+import com.app.core.ui.asMessage
 
 @Composable
 fun RecipesRoute(
@@ -138,10 +139,10 @@ fun RecipesScreen(
                             CircularProgressIndicator()
                         }
                     }
-                } else if (state.errorMessage != null) {
+                } else if (state.error != null) {
                     item {
                         Text(
-                            text = state.errorMessage,
+                            text = state.error.asMessage(),
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodyMedium
                         )

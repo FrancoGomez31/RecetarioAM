@@ -1,5 +1,4 @@
 package com.app.features.auth
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.app.core.domain.AuthRepository

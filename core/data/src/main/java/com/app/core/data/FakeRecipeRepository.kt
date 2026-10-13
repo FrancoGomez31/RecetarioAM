@@ -1,6 +1,7 @@
 package com.app.core.data
 
 import com.app.core.domain.AppResult
+import com.app.core.domain.DomainError
 import com.app.core.domain.Recipe
 import com.app.core.domain.RecipeRepository
 import com.app.core.domain.Visibility
@@ -22,7 +23,7 @@ class FakeRecipeRepository : RecipeRepository {
 
     override suspend fun getRecipe(id: String): AppResult<Recipe> {
         val recipe = recipes.firstOrNull { it.id == id }
-            ?: return AppResult.Error("No se encontró la receta")
+            ?: return AppResult.Error(DomainError.NotFound)
         return AppResult.Success(recipe)
     }
 

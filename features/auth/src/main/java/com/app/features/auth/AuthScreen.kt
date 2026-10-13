@@ -39,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.core.ui.RecetarioTheme
+import com.app.core.ui.asMessage
 
 @Composable
 fun AuthRoute(
@@ -187,9 +188,9 @@ fun AuthScreen(
                 }
             }
 
-            if (state.errorMessage != null) {
+            state.error?.let { error ->
                 Text(
-                    text = state.errorMessage,
+                    text = error.asMessage(),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
