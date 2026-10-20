@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    // Procesa app/google-services.json (solo va en el módulo :app)
+    alias(libs.plugins.google.services)
 }
 
 android {

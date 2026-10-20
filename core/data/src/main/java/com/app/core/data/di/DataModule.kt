@@ -1,7 +1,7 @@
 package com.app.core.data.di
 
-import com.app.core.data.FakeAuthRepository
 import com.app.core.data.FakeRecipeRepository
+import com.app.core.data.FirebaseAuthRepository
 import com.app.core.domain.AuthRepository
 import com.app.core.domain.RecipeRepository
 import dagger.Binds
@@ -12,10 +12,9 @@ import javax.inject.Singleton
 
 /**
  * Esta capa declara qué implementación usa cada contrato del dominio.
- * Cuando conectemos Firebase, cambiar FakeAuthRepository por FirebaseAuthRepository
- * es tocar UNA línea acá: ningún ViewModel ni pantalla se entera.
+ * Autenticación ya es real (Firebase); las recetas siguen siendo falsas hasta conectar Firestore.
  *
- * @Singleton: una sola instancia para toda la app. Los repositorios falsos guardan
+ * @Singleton: una sola instancia para toda la app. El repositorio falso de recetas guarda
  * datos en memoria, y sin esto cada pantalla tendría su propia copia.
  */
 @Module
@@ -24,7 +23,7 @@ abstract class DataModule {
 
     @Binds
     @Singleton
-    abstract fun bindAuthRepository(impl: FakeAuthRepository): AuthRepository
+    abstract fun bindAuthRepository(impl: FirebaseAuthRepository): AuthRepository
 
     @Binds
     @Singleton

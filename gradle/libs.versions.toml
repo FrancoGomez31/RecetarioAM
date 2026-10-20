@@ -18,6 +18,9 @@ navigation3 = "1.2.0"
 kotlinxSerialization = "1.11.0"
 kotlinxCoroutines = "1.11.0"
 turbine = "1.2.1"
+# Firebase: la BoM fija versiones compatibles entre todas sus librerías.
+firebaseBom = "35.0.2"
+googleServices = "4.5.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -53,6 +56,12 @@ hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-lifecycle-viewmodel-compose", version.ref = "androidxHilt" }
 
+# --- Firebase ---
+# Con la BoM, las librerías de Firebase no llevan versión propia.
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
+
 # --- Testing ---
 # Turbine: permite testear la SECUENCIA de un Flow, no solo su último valor.
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
@@ -65,3 +74,5 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+# Lee app/google-services.json y genera la configuración de Firebase (solo se aplica en :app)
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
