@@ -11,3 +11,8 @@ kotlin {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
     }
 }
+
+dependencies {
+    // Solo las anotaciones (@Inject). Sin Hilt: el dominio no conoce el framework de DI.
+    api(libs.javax.inject)
+}

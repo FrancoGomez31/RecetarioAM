@@ -4,9 +4,10 @@ import com.app.core.domain.AppResult
 import com.app.core.domain.AuthRepository
 import com.app.core.domain.DomainError
 import com.app.core.domain.User
+import javax.inject.Inject
 
 // Implementación temporal en memoria. Se reemplaza por Firebase más adelante.
-class FakeAuthRepository : AuthRepository {
+class FakeAuthRepository @Inject constructor() : AuthRepository {
 
     private val accounts = mutableMapOf<String, String>() // email -> contraseña
     private var currentUser: User? = null

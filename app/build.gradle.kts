@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     // Genera la serialización de las rutas de navegación (@Serializable)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -67,6 +69,12 @@ dependencies {
     // Un ViewModelStore por pantalla del back stack
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.kotlinx.serialization.core)
+
+    // Hilt: el grafo de dependencias de toda la app se ensambla acá
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    // hiltViewModel(): el puente entre el grafo de Hilt y los ViewModel de Compose
+    implementation(libs.androidx.hilt.navigation.compose)
 
     // Tests
     testImplementation(libs.junit)

@@ -5,9 +5,10 @@ import com.app.core.domain.DomainError
 import com.app.core.domain.Recipe
 import com.app.core.domain.RecipeRepository
 import com.app.core.domain.Visibility
+import javax.inject.Inject
 
 // Implementación temporal en memoria. Se reemplaza por Firebase más adelante.
-class FakeRecipeRepository : RecipeRepository {
+class FakeRecipeRepository @Inject constructor() : RecipeRepository {
 
     private val recipes = mutableListOf(
         Recipe("1", "Ñoquis al pomodoro", null, "Nápoles", "Italia", 35, 2, Visibility.PUBLIC),

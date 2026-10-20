@@ -16,18 +16,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.ViewModelProvider
-import com.app.core.data.FakeAuthRepository
-import com.app.core.data.FakeRecipeRepository
-import com.app.core.domain.AuthRepository
-import com.app.core.domain.RecipeRepository
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.app.core.ui.RecetarioTheme
 import com.app.features.auth.AuthRoute
-import com.app.features.auth.AuthViewModel
-import com.app.features.auth.AuthViewModelFactory
 import com.app.features.recipes.RecipesRoute
-import com.app.features.recipes.RecipesViewModel
-import com.app.features.recipes.RecipesViewModelFactory
+import dagger.hilt.android.AndroidEntryPoint
 
 private enum class MainTab(val label: String, val icon: String) {
     RECIPES("Mis recetas", "📖"),
@@ -36,24 +29,15 @@ private enum class MainTab(val label: String, val icon: String) {
     ACHIEVEMENTS("Logros", "🏆")
 }
 
+/**
+ * @AndroidEntryPoint: habilita que hiltViewModel() encuentre el grafo de dependencias.
+ * Acá ya no se crea ningún repositorio ni ViewModel a mano.
+ */
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    // Temporal: repositorios falsos en memoria. Se reemplazan por Firebase más adelante.
-    private val authRepository: AuthRepository = FakeAuthRepository()
-    private val recipeRepository: RecipeRepository = FakeRecipeRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val authViewModel = ViewModelProvider(
-            this,
-            AuthViewModelFactory(authRepository)
-        )[AuthViewModel::class.java]
-
-        val recipesViewModel = ViewModelProvider(
-            this,
-            RecipesViewModelFactory(recipeRepository)
-        )[RecipesViewModel::class.java]
 
         setContent {
             RecetarioTheme {
@@ -62,7 +46,7 @@ class MainActivity : ComponentActivity() {
 
                 if (!loggedIn) {
                     AuthRoute(
-                        viewModel = authViewModel,
+                        viewModel = hiltViewModel(),
                         onAuthenticated = { loggedIn = true }
                     )
                 } else {
@@ -88,7 +72,7 @@ class MainActivity : ComponentActivity() {
                         ) {
                             when (selectedTab) {
                                 MainTab.RECIPES -> RecipesRoute(
-                                    viewModel = recipesViewModel,
+                                    viewModel = hiltViewModel(),
                                     onAddRecipe = { /* pendiente: alta de receta */ },
                                     onRecipeClick = { /* pendiente: detalle */ },
                                     onNotificationsClick = { /* pendiente: notificaciones */ },
