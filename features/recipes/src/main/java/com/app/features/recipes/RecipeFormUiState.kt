@@ -30,9 +30,12 @@ data class RecipeFormUiState(
     // Se guardan como texto para poder dejar el campo vacío mientras se escribe.
     val servings: String = "4",
     val prepTime: String = "",
-    // Provisorio: ciudad y país a mano hasta tener el selector de origen en el mapa.
+    // Origen: lo completa el selector con mapa. País es lo mínimo; ciudad y restaurante son opcionales.
     val city: String = "",
     val country: String = "",
+    val restaurant: String = "",
+    val latitude: Double? = null,
+    val longitude: Double? = null,
     val visibility: Visibility = Visibility.PRIVATE,
     val ingredients: List<IngredientInput> = emptyList(),
     val steps: List<StepInput> = emptyList(),
@@ -43,4 +46,21 @@ data class RecipeFormUiState(
 ) {
     val canSave: Boolean
         get() = !isSaving && !isLoading
+
+    val hasOrigin: Boolean
+        get() = country.isNotBlank()
+
+    /** "Trattoria X, Nápoles, Italia": salta las partes vacías. */
+    val originLabel: String
+        get() = listOf(restaurant, city, country)
+            .filter { it.isNotBlank() }
+            .joinToString(", ")
+
+    /** Nivel de detalle del origen elegido, para el cartel "Ciudad seleccionada". */
+    val originLevel: String
+        get() = when {
+            restaurant.isNotBlank() -> "Restaurante"
+            city.isNotBlank() -> "Ciudad"
+            else -> "País"
+        }
 }

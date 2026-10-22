@@ -13,6 +13,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.app.features.account.AccountRoute
 import com.app.features.account.AccountViewModel
+import com.app.features.recipes.PlacePickerViewModel
 import com.app.features.recipes.RecipeFormRoute
 import com.app.features.recipes.RecipeFormViewModel
 import com.app.features.recipes.RecipesRoute
@@ -71,8 +72,11 @@ fun AppNavDisplay(
         // `key` es la RecipeFormDestination con la que se navegó: de ahí sale el id (o null).
         entry<RecipeFormDestination> { key ->
             val viewModel: RecipeFormViewModel = hiltViewModel()
+            // El selector de origen es parte del formulario: comparte su entrada del back stack.
+            val placePickerViewModel: PlacePickerViewModel = hiltViewModel()
             RecipeFormRoute(
                 viewModel = viewModel,
+                placePickerViewModel = placePickerViewModel,
                 recipeId = key.recipeId,
                 onBack = { navigationState.goBackFrom(key) },
                 onSaved = { navigationState.goBackFrom(key) }

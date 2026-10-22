@@ -13,6 +13,7 @@ internal fun Recipe.cleaned(): Recipe = copy(
     description = description.trim(),
     city = city.trim(),
     country = country.trim(),
+    restaurant = restaurant.trim(),
     ingredients = ingredients
         .map { Ingredient(quantity = it.quantity.trim(), name = it.name.trim()) }
         .filter { it.name.isNotEmpty() },
@@ -29,7 +30,8 @@ internal fun validateRecipe(recipe: Recipe): Set<RecipeField> = buildSet {
     if (recipe.name.isEmpty()) add(RecipeField.NAME)
     if (recipe.servings < 1) add(RecipeField.SERVINGS)
     if (recipe.prepTimeMinutes < 1) add(RecipeField.TIME)
-    if (recipe.city.isEmpty() || recipe.country.isEmpty()) add(RecipeField.ORIGIN)
+    // El origen puede ser un país, una ciudad o un restaurante: el país es lo mínimo.
+    if (recipe.country.isEmpty()) add(RecipeField.ORIGIN)
     if (recipe.ingredients.isEmpty()) add(RecipeField.INGREDIENTS)
     if (recipe.steps.isEmpty()) add(RecipeField.STEPS)
 }

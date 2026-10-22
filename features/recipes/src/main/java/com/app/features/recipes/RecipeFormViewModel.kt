@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.app.core.domain.AppResult
 import com.app.core.domain.DomainError
 import com.app.core.domain.Ingredient
+import com.app.core.domain.Place
+import com.app.core.domain.PlaceType
 import com.app.core.domain.Recipe
 import com.app.core.domain.RecipeField
 import com.app.core.domain.Visibility
@@ -36,7 +38,7 @@ class RecipeFormViewModel @Inject constructor(
     )
     val uiState: StateFlow<RecipeFormUiState> = _uiState.asStateFlow()
 
-    /** Receta que se está editando: de ahí salen los datos que el formulario no muestra (foto, intentos, coordenadas). */
+    /** Receta que se está editando: de ahí salen los datos que el formulario no muestra (foto, intentos). */
     private var original: Recipe? = null
 
     /** La pantalla llama a start() cada vez que se compone; solo la primera vez hace algo. */
@@ -75,11 +77,25 @@ class RecipeFormViewModel @Inject constructor(
         it.copy(prepTime = value.filter(Char::isDigit).take(4))
     }
 
-    fun onCityChange(value: String) = updateField(RecipeField.ORIGIN) { it.copy(city = value) }
-
-    fun onCountryChange(value: String) = updateField(RecipeField.ORIGIN) { it.copy(country = value) }
-
     fun onVisibilityChange(value: Visibility) = _uiState.update { it.copy(visibility = value) }
+
+    // --- Origen ---
+
+    /**
+     * Llega desde el selector con mapa: el lugar elegido y la posición final del pin
+     * (que puede ser distinta a la del lugar si el usuario la ajustó).
+     * Se reemplaza el origen completo, así no quedan restos de una elección anterior.
+     */
+    fun onOriginSelected(place: Place, latitude: Double, longitude: Double) =
+        updateField(RecipeField.ORIGIN) {
+            it.copy(
+                city = place.city,
+                country = place.country,
+                restaurant = if (place.type == PlaceType.RESTAURANT) place.name else "",
+                latitude = latitude,
+                longitude = longitude
+            )
+        }
 
     // --- Ingredientes ---
 
@@ -155,10 +171,6 @@ class RecipeFormViewModel @Inject constructor(
             attempts = 0,
             visibility = Visibility.PRIVATE
         )
-        // Si cambió el origen, las coordenadas viejas ya no corresponden: se borran hasta elegir el nuevo pin.
-        val originChanged = original != null &&
-                (city.trim() != base.city || country.trim() != base.country)
-
         return base.copy(
             name = name,
             description = description,
@@ -166,11 +178,12 @@ class RecipeFormViewModel @Inject constructor(
             prepTimeMinutes = prepTime.toIntOrNull() ?: 0,
             city = city,
             country = country,
+            restaurant = restaurant,
+            latitude = latitude,
+            longitude = longitude,
             visibility = visibility,
             ingredients = ingredients.map { Ingredient(quantity = it.quantity, name = it.name) },
-            steps = steps.map { it.text },
-            latitude = if (originChanged) null else base.latitude,
-            longitude = if (originChanged) null else base.longitude
+            steps = steps.map { it.text }
         )
     }
 
@@ -183,6 +196,9 @@ class RecipeFormViewModel @Inject constructor(
         prepTime = prepTimeMinutes.toString(),
         city = city,
         country = country,
+        restaurant = restaurant,
+        latitude = latitude,
+        longitude = longitude,
         visibility = visibility,
         ingredients = ingredients
             .map { IngredientInput(newRowId(), it.quantity, it.name) }

@@ -1,5 +1,7 @@
 package com.app.features.recipes
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,13 +16,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.Button
@@ -38,9 +43,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -56,8 +66,7 @@ data class RecipeFormActions(
     val onDescriptionChange: (String) -> Unit = {},
     val onServingsChange: (String) -> Unit = {},
     val onPrepTimeChange: (String) -> Unit = {},
-    val onCityChange: (String) -> Unit = {},
-    val onCountryChange: (String) -> Unit = {},
+    val onOriginClick: () -> Unit = {},
     val onVisibilityChange: (Visibility) -> Unit = {},
     val onIngredientQuantityChange: (Long, String) -> Unit = { _, _ -> },
     val onIngredientNameChange: (Long, String) -> Unit = { _, _ -> },
@@ -72,42 +81,67 @@ data class RecipeFormActions(
 @Composable
 fun RecipeFormRoute(
     viewModel: RecipeFormViewModel,
+    placePickerViewModel: PlacePickerViewModel,
     recipeId: String?,
     onBack: () -> Unit,
     onSaved: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // El selector de origen es un paso del formulario, no un destino aparte: se muestra EN LUGAR
+    // del formulario, y así su resultado vuelve directo al ViewModel sin pasar datos entre pantallas.
+    var showOriginPicker by rememberSaveable { mutableStateOf(false) }
+
+    // El scroll se levanta acá: mientras el selector está abierto el formulario sale de la
+    // composición, y sin esto volvería siempre arriba de todo.
+    val scrollState = rememberScrollState()
+
     // El ViewModel ignora llamadas repetidas, así que una rotación no recarga ni pisa lo escrito.
     LaunchedEffect(recipeId) { viewModel.start(recipeId) }
     LaunchedEffect(state.saved) { if (state.saved) onSaved() }
 
-    RecipeFormScreen(
-        state = state,
-        actions = RecipeFormActions(
-            onBack = onBack,
-            onNameChange = viewModel::onNameChange,
-            onDescriptionChange = viewModel::onDescriptionChange,
-            onServingsChange = viewModel::onServingsChange,
-            onPrepTimeChange = viewModel::onPrepTimeChange,
-            onCityChange = viewModel::onCityChange,
-            onCountryChange = viewModel::onCountryChange,
-            onVisibilityChange = viewModel::onVisibilityChange,
-            onIngredientQuantityChange = viewModel::onIngredientQuantityChange,
-            onIngredientNameChange = viewModel::onIngredientNameChange,
-            onAddIngredient = viewModel::onAddIngredient,
-            onRemoveIngredient = viewModel::onRemoveIngredient,
-            onStepChange = viewModel::onStepChange,
-            onAddStep = viewModel::onAddStep,
-            onRemoveStep = viewModel::onRemoveStep,
-            onSave = viewModel::onSave
+    if (showOriginPicker) {
+        PlacePickerRoute(
+            viewModel = placePickerViewModel,
+            onBack = {
+                placePickerViewModel.reset()
+                showOriginPicker = false
+            },
+            onConfirm = { place, latitude, longitude ->
+                viewModel.onOriginSelected(place, latitude, longitude)
+                placePickerViewModel.reset()
+                showOriginPicker = false
+            }
         )
-    )
+    } else {
+        RecipeFormScreen(
+            state = state,
+            scrollState = scrollState,
+            actions = RecipeFormActions(
+                onBack = onBack,
+                onNameChange = viewModel::onNameChange,
+                onDescriptionChange = viewModel::onDescriptionChange,
+                onServingsChange = viewModel::onServingsChange,
+                onPrepTimeChange = viewModel::onPrepTimeChange,
+                onOriginClick = { showOriginPicker = true },
+                onVisibilityChange = viewModel::onVisibilityChange,
+                onIngredientQuantityChange = viewModel::onIngredientQuantityChange,
+                onIngredientNameChange = viewModel::onIngredientNameChange,
+                onAddIngredient = viewModel::onAddIngredient,
+                onRemoveIngredient = viewModel::onRemoveIngredient,
+                onStepChange = viewModel::onStepChange,
+                onAddStep = viewModel::onAddStep,
+                onRemoveStep = viewModel::onRemoveStep,
+                onSave = viewModel::onSave
+            )
+        )
+    }
 }
 
 @Composable
 fun RecipeFormScreen(
     state: RecipeFormUiState,
+    scrollState: ScrollState,
     actions: RecipeFormActions
 ) {
     Surface(
@@ -123,7 +157,7 @@ fun RecipeFormScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .imePadding()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
                     .padding(horizontal = 20.dp, vertical = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -405,38 +439,91 @@ private fun StepsSection(
     }
 }
 
+/** Tarjeta que abre el selector con mapa. Muestra el origen elegido, o invita a elegirlo. */
 @Composable
 private fun OriginSection(
     state: RecipeFormUiState,
     actions: RecipeFormActions
 ) {
     val invalid = RecipeField.ORIGIN in state.invalidFields
-    // Provisorio: dos campos de texto. El Paso 3 lo reemplaza por el selector con mapa.
+
     FormField(label = "Origen *") {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = state.city,
-                    onValueChange = actions.onCityChange,
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    isError = invalid && state.city.isBlank(),
-                    placeholder = { Text("Ciudad") },
-                    shape = RoundedCornerShape(12.dp)
+            Surface(
+                onClick = actions.onOriginClick,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = if (invalid) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant
                 )
-                OutlinedTextField(
-                    value = state.country,
-                    onValueChange = actions.onCountryChange,
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    isError = invalid && state.country.isBlank(),
-                    placeholder = { Text("País") },
-                    shape = RoundedCornerShape(12.dp)
-                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.LocationOn,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        if (state.hasOrigin) {
+                            Text(
+                                text = "${state.originLevel} seleccionado",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = state.originLabel,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                text = "Elegir o cambiar en el mapa",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            Text(
+                                text = "Elegir el origen",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "Un país, una ciudad o un restaurante",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
+
             if (invalid) {
                 Text(
-                    text = "Indicá la ciudad y el país de origen.",
+                    text = "Elegí el origen de la receta.",
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -523,6 +610,7 @@ private fun RecipeFormScreenPreview() {
                     StepInput(4, "Sumá huevo y harina. Uní sin amasar de más.")
                 )
             ),
+            scrollState = rememberScrollState(),
             actions = RecipeFormActions()
         )
     }

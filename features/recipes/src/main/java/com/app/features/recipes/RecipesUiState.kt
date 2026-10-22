@@ -3,6 +3,7 @@ package com.app.features.recipes
 import com.app.core.domain.DomainError
 import com.app.core.domain.Recipe
 import com.app.core.domain.Visibility
+import com.app.core.domain.originLabel
 
 enum class RecipeFilter {
     ALL,
@@ -38,10 +39,10 @@ data class RecipesUiState(
             }
             val text = query.trim()
             if (text.isEmpty()) return byFilter
+            // originLabel junta restaurante, ciudad y país: se busca por cualquiera de los tres.
             return byFilter.filter {
                 it.name.contains(text, ignoreCase = true) ||
-                        it.city.contains(text, ignoreCase = true) ||
-                        it.country.contains(text, ignoreCase = true)
+                        it.originLabel.contains(text, ignoreCase = true)
             }
         }
 }

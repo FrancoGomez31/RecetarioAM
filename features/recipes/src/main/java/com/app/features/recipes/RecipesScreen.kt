@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.core.domain.Recipe
 import com.app.core.domain.Visibility
+import com.app.core.domain.originLabel
 import com.app.core.ui.RecetarioTheme
 import com.app.core.ui.asMessage
 
@@ -268,7 +269,7 @@ private fun RecipeCard(
                     fontWeight = FontWeight.Medium
                 )
                 Text(
-                    text = "${recipe.city}, ${recipe.country}",
+                    text = recipe.originLabel,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
