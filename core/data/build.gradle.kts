@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
+    // Genera la deserialización de las respuestas JSON de Nominatim (@Serializable)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
@@ -24,6 +26,12 @@ dependencies {
     implementation(project(":core:firebase"))
 
     implementation(libs.androidx.core.ktx)
+
+    // Red: Retrofit convierte una interfaz Kotlin en llamadas HTTP, OkHttp las ejecuta
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.kotlinx.serialization)
+    implementation(libs.okhttp)
+    implementation(libs.kotlinx.serialization.json)
 
     // Hilt: KSP genera el código de inyección de este módulo
     implementation(libs.hilt.android)
