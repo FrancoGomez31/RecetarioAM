@@ -17,5 +17,9 @@ sealed interface DomainError {
     data object Network : DomainError
     data object NotFound : DomainError
     data object Unauthenticated : DomainError
+
+    /** La receta no cumple las reglas; [fields] dice cuáles son los campos que faltan o están mal. */
+    data class InvalidRecipe(val fields: Set<RecipeField>) : DomainError
+
     data class Unknown(val message: String? = null) : DomainError
 }

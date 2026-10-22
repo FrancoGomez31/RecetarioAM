@@ -25,6 +25,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -39,22 +42,41 @@ import com.app.core.ui.asMessage
 @Composable
 fun RecipesRoute(
     viewModel: RecipesViewModel,
-    onAddRecipe: () -> Unit,
+    onCreateManual: () -> Unit,
+    onCreateFromLink: () -> Unit,
     onRecipeClick: (String) -> Unit,
     onNotificationsClick: () -> Unit,
     onAccountClick: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // Si el sheet está abierto es puro estado de UI: no pertenece al ViewModel.
+    // rememberSaveable hace que siga abierto si el usuario rota el teléfono.
+    var showCreateSheet by rememberSaveable { mutableStateOf(false) }
+
     RecipesScreen(
         state = state,
         onQueryChange = viewModel::onQueryChange,
         onFilterChange = viewModel::onFilterChange,
-        onAddRecipe = onAddRecipe,
+        onAddRecipe = { showCreateSheet = true },
         onRecipeClick = onRecipeClick,
         onNotificationsClick = onNotificationsClick,
         onAccountClick = onAccountClick
     )
+
+    if (showCreateSheet) {
+        CreateRecipeSheet(
+            onDismiss = { showCreateSheet = false },
+            onManualClick = {
+                showCreateSheet = false
+                onCreateManual()
+            },
+            onLinkClick = {
+                showCreateSheet = false
+                onCreateFromLink()
+            }
+        )
+    }
 }
 
 @Composable

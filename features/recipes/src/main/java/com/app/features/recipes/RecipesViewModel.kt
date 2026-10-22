@@ -20,12 +20,13 @@ class RecipesViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(RecipesUiState())
     val uiState: StateFlow<RecipesUiState> = _uiState.asStateFlow()
 
-    init {
-        loadRecipes()
-    }
-
+    /**
+     * Se llama cada vez que Home aparece (primera vez y al volver de otra pantalla).
+     * El spinner solo se muestra si todavía no hay nada que mostrar: al recargar con la
+     * lista ya a la vista, se actualiza sin parpadeo.
+     */
     fun loadRecipes() {
-        _uiState.update { it.copy(isLoading = true, error = null) }
+        _uiState.update { it.copy(isLoading = it.recipes.isEmpty(), error = null) }
         viewModelScope.launch {
             when (val result = getRecipesUseCase()) {
                 is AppResult.Success -> _uiState.update {

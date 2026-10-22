@@ -6,5 +6,6 @@
     <string name="core_ui_error_network">No se pudo conectar. Revisá tu conexión e intentá de nuevo.</string>
     <string name="core_ui_error_not_found">No encontramos lo que buscás.</string>
     <string name="core_ui_error_unauthenticated">Tu sesión venció. Iniciá sesión de nuevo.</string>
+    <string name="core_ui_error_invalid_recipe">Revisá los campos obligatorios de la receta.</string>
     <string name="core_ui_error_unknown">Algo salió mal. Intentá de nuevo.</string>
 </resources>

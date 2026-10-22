@@ -1,6 +1,7 @@
 package com.app.recetario.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -12,6 +13,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.app.features.account.AccountRoute
 import com.app.features.account.AccountViewModel
+import com.app.features.recipes.RecipeFormRoute
+import com.app.features.recipes.RecipeFormViewModel
 import com.app.features.recipes.RecipesRoute
 import com.app.features.recipes.RecipesViewModel
 import com.app.recetario.ui.ComingSoonScreen
@@ -33,10 +36,19 @@ fun AppNavDisplay(
             // (casos de uso -> repositorio) sin que acá nombremos nada de eso.
             // Se crea UNA vez por entrada del back stack y sobrevive a rotaciones.
             val viewModel: RecipesViewModel = hiltViewModel()
+
+            // Cada vez que Home vuelve a mostrarse (por ejemplo al guardar una receta y volver
+            // atrás) recarga la lista. Provisorio: con Firestore el repositorio avisará los
+            // cambios solo y este efecto ya no hará falta.
+            LaunchedEffect(Unit) { viewModel.loadRecipes() }
+
             RecipesRoute(
                 viewModel = viewModel,
-                onAddRecipe = { /* pendiente: alta de receta */ },
-                onRecipeClick = { /* pendiente: detalle de receta */ },
+                onCreateManual = { navigationState.navigate(RecipeFormDestination()) },
+                onCreateFromLink = { /* pendiente: carga por link con IA */ },
+                // TEMPORAL: abre el formulario en modo edición para probarlo.
+                // Se reemplaza por la pantalla de detalle (Paso 4).
+                onRecipeClick = { id -> navigationState.navigate(RecipeFormDestination(id)) },
                 onNotificationsClick = { /* pendiente: notificaciones */ },
                 // navigate() agrega la pantalla encima del back stack de la pestaña actual
                 onAccountClick = { navigationState.navigate(AccountDestination) }
@@ -53,6 +65,17 @@ fun AppNavDisplay(
                 viewModel = viewModel,
                 // goBackFrom: si el usuario toca la flecha dos veces rápido, el segundo toque no hace nada
                 onBack = { navigationState.goBackFrom(AccountDestination) }
+            )
+        }
+
+        // `key` es la RecipeFormDestination con la que se navegó: de ahí sale el id (o null).
+        entry<RecipeFormDestination> { key ->
+            val viewModel: RecipeFormViewModel = hiltViewModel()
+            RecipeFormRoute(
+                viewModel = viewModel,
+                recipeId = key.recipeId,
+                onBack = { navigationState.goBackFrom(key) },
+                onSaved = { navigationState.goBackFrom(key) }
             )
         }
     }

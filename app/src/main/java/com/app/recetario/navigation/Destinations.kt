@@ -22,3 +22,7 @@ data object AchievementsDestination : NavKey
 // Pantallas que se abren encima de una pestaña (ahí la barra inferior se oculta sola)
 @Serializable
 data object AccountDestination : NavKey
+
+/** Formulario de receta: recipeId == null crea una receta nueva; con id, edita esa receta. */
+@Serializable
+data class RecipeFormDestination(val recipeId: String? = null) : NavKey

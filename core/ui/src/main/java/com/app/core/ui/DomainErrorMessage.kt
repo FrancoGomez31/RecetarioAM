@@ -17,5 +17,6 @@ fun DomainError.asMessage(): String = when (this) {
     DomainError.Network -> stringResource(R.string.core_ui_error_network)
     DomainError.NotFound -> stringResource(R.string.core_ui_error_not_found)
     DomainError.Unauthenticated -> stringResource(R.string.core_ui_error_unauthenticated)
+    is DomainError.InvalidRecipe -> stringResource(R.string.core_ui_error_invalid_recipe)
     is DomainError.Unknown -> message ?: stringResource(R.string.core_ui_error_unknown)
 }
