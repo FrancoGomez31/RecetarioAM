@@ -15,4 +15,6 @@ kotlin {
 dependencies {
     // Solo las anotaciones (@Inject). Sin Hilt: el dominio no conoce el framework de DI.
     api(libs.javax.inject)
+    // Flow aparece en los contratos del dominio (AuthRepository.observeCurrentUser)
+    api(libs.kotlinx.coroutines.core)
 }

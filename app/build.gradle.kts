@@ -47,6 +47,7 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":features:auth"))
     implementation(project(":features:recipes"))
+    implementation(project(":features:account"))
     implementation(project(":features:map"))
 
     // Compose y Android

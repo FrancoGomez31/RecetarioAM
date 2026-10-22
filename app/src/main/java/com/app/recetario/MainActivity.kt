@@ -31,7 +31,8 @@ class MainActivity : ComponentActivity() {
                 } else {
                     AuthRoute(
                         viewModel = hiltViewModel(),
-                        onAuthenticated = sessionViewModel::onAuthenticated
+                        // La sesión se observa sola desde Firebase: no hay nada que avisar.
+                        onAuthenticated = { }
                     )
                 }
             }

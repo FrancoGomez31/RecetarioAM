@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.core.domain.AppResult
 import com.app.core.domain.usecase.GetCurrentUserUseCase
+import com.app.core.domain.usecase.ObserveSessionUseCase
 import com.app.core.domain.usecase.SignInUseCase
 import com.app.core.domain.usecase.SignUpUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,13 +23,24 @@ import kotlinx.coroutines.launch
 class AuthViewModel @Inject constructor(
     private val signInUseCase: SignInUseCase,
     private val signUpUseCase: SignUpUseCase,
-    getCurrentUserUseCase: GetCurrentUserUseCase
+    getCurrentUserUseCase: GetCurrentUserUseCase,
+    observeSessionUseCase: ObserveSessionUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
         AuthUiState(isAuthenticated = getCurrentUserUseCase() != null)
     )
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
+
+    init {
+        // Este ViewModel vive mientras la Activity esté viva. Al cerrar sesión hay que dejar el
+        // formulario como nuevo: sin contraseña escrita ni "ya autenticado" de la sesión anterior.
+        viewModelScope.launch {
+            observeSessionUseCase().collect { loggedIn ->
+                if (!loggedIn) _uiState.value = AuthUiState()
+            }
+        }
+    }
 
     fun onEmailChange(email: String) {
         _uiState.update { it.copy(email = email, error = null) }

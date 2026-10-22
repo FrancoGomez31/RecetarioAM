@@ -10,13 +10,15 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.app.features.account.AccountRoute
+import com.app.features.account.AccountViewModel
 import com.app.features.recipes.RecipesRoute
 import com.app.features.recipes.RecipesViewModel
 import com.app.recetario.ui.ComingSoonScreen
 
 /**
  * La navegación vive en :app. Las features no se conocen entre sí:
- * solo exponen callbacks (onRecipeClick, onAddRecipe…) y acá decidimos qué hace cada uno.
+ * solo exponen callbacks (onRecipeClick, onAccountClick…) y acá decidimos qué hace cada uno.
  */
 @Composable
 fun AppNavDisplay(
@@ -36,13 +38,23 @@ fun AppNavDisplay(
                 onAddRecipe = { /* pendiente: alta de receta */ },
                 onRecipeClick = { /* pendiente: detalle de receta */ },
                 onNotificationsClick = { /* pendiente: notificaciones */ },
-                onAccountClick = { /* pendiente: Mi cuenta */ }
+                // navigate() agrega la pantalla encima del back stack de la pestaña actual
+                onAccountClick = { navigationState.navigate(AccountDestination) }
             )
         }
 
         entry<MapDestination> { ComingSoonScreen(title = "Mapa") }
         entry<ExploreDestination> { ComingSoonScreen(title = "Explorar") }
         entry<AchievementsDestination> { ComingSoonScreen(title = "Logros") }
+
+        entry<AccountDestination> {
+            val viewModel: AccountViewModel = hiltViewModel()
+            AccountRoute(
+                viewModel = viewModel,
+                // goBackFrom: si el usuario toca la flecha dos veces rápido, el segundo toque no hace nada
+                onBack = { navigationState.goBackFrom(AccountDestination) }
+            )
+        }
     }
 
     NavDisplay(

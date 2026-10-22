@@ -1,28 +1,32 @@
 package com.app.recetario
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.app.core.domain.usecase.GetCurrentUserUseCase
+import com.app.core.domain.usecase.ObserveSessionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 
 /**
  * Dueño de la pregunta "¿hay una sesión iniciada?". Decide si se muestra el acceso o la app.
  *
- * Hoy la sesión vive en memoria. Cuando conectemos Firebase, este es el único lugar que
- * cambia: pasa a observar el estado de autenticación real y la sesión sobrevive entre ejecuciones.
+ * La respuesta viene de Firebase: iniciar o cerrar sesión desde cualquier pantalla
+ * cambia este valor solo, sin que nadie tenga que avisarle.
  */
 @HiltViewModel
 class SessionViewModel @Inject constructor(
-    getCurrentUserUseCase: GetCurrentUserUseCase
+    getCurrentUserUseCase: GetCurrentUserUseCase,
+    observeSessionUseCase: ObserveSessionUseCase
 ) : ViewModel() {
 
-    private val _isLoggedIn = MutableStateFlow(getCurrentUserUseCase() != null)
-    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
-
-    fun onAuthenticated() {
-        _isLoggedIn.value = true
-    }
+    // El valor inicial evita un parpadeo del acceso al abrir la app con la sesión ya iniciada.
+    val isLoggedIn: StateFlow<Boolean> = observeSessionUseCase()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = getCurrentUserUseCase() != null
+        )
 }

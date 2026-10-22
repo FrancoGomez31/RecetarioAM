@@ -8,6 +8,8 @@ import com.app.core.firebase.AuthSourceException
 import com.app.core.firebase.FirebaseAuthDataSource
 import com.app.core.firebase.FirebaseAuthUser
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /**
  * Implementación real de [AuthRepository]. Traduce lo que devuelve el data source
@@ -19,11 +21,17 @@ class FirebaseAuthRepository @Inject constructor(
 
     override fun getCurrentUser(): User? = dataSource.currentUser()?.toDomain()
 
+    override fun observeCurrentUser(): Flow<User?> =
+        dataSource.observeUser().map { user -> user?.toDomain() }
+
     override suspend fun signIn(email: String, password: String): AppResult<User> =
         authCall { dataSource.signIn(email, password) }
 
     override suspend fun signUp(email: String, password: String): AppResult<User> =
         authCall { dataSource.signUp(email, password) }
+
+    override suspend fun updateDisplayName(name: String): AppResult<User> =
+        authCall { dataSource.updateDisplayName(name) }
 
     override suspend fun signOut() {
         dataSource.signOut()
@@ -36,7 +44,7 @@ private suspend fun authCall(block: suspend () -> FirebaseAuthUser): AppResult<U
     AppResult.Error(e.toDomainError())
 }
 
-private fun FirebaseAuthUser.toDomain() = User(id = uid, email = email)
+private fun FirebaseAuthUser.toDomain() = User(id = uid, email = email, displayName = displayName)
 
 private fun AuthSourceException.toDomainError(): DomainError = when (this) {
     is AuthSourceException.InvalidEmail -> DomainError.InvalidEmail
