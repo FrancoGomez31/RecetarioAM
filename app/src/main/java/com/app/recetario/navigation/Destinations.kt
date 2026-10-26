@@ -23,6 +23,14 @@ data object AchievementsDestination : NavKey
 @Serializable
 data object AccountDestination : NavKey
 
+/** Detalle de una receta: ingredientes, pasos, origen en el mapa y progreso. */
+@Serializable
+data class RecipeDetailDestination(val recipeId: String) : NavKey
+
 /** Formulario de receta: recipeId == null crea una receta nueva; con id, edita esa receta. */
 @Serializable
 data class RecipeFormDestination(val recipeId: String? = null) : NavKey
+
+/** Registrar un intento de cocinar una receta: fotos por paso, comparación y nota. */
+@Serializable
+data class AttemptDestination(val recipeId: String) : NavKey

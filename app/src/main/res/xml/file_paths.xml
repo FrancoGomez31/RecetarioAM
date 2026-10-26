@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Carpeta cache/camera/: ahí se crean los archivos temporales de las fotos -->
+    <cache-path
+        name="camera"
+        path="camera/" />
+</paths>

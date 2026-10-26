@@ -26,6 +26,8 @@ retrofit = "3.0.0"
 okhttp = "4.12.0"
 # Mapa: OpenStreetMap, sin API key.
 osmdroid = "6.1.20"
+# Imágenes: Coil muestra las fotos (archivos locales hoy, URLs de la nube después).
+coil = "3.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -75,6 +77,9 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 
 # --- Mapa ---
 osmdroid-android = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
+
+# --- Imágenes ---
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 
 # --- Testing ---
 # Turbine: permite testear la SECUENCIA de un Flow, no solo su último valor.

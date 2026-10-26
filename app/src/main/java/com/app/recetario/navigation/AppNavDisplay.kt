@@ -13,7 +13,11 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.app.features.account.AccountRoute
 import com.app.features.account.AccountViewModel
+import com.app.features.recipes.AttemptRoute
+import com.app.features.recipes.AttemptViewModel
 import com.app.features.recipes.PlacePickerViewModel
+import com.app.features.recipes.RecipeDetailRoute
+import com.app.features.recipes.RecipeDetailViewModel
 import com.app.features.recipes.RecipeFormRoute
 import com.app.features.recipes.RecipeFormViewModel
 import com.app.features.recipes.RecipesRoute
@@ -47,9 +51,7 @@ fun AppNavDisplay(
                 viewModel = viewModel,
                 onCreateManual = { navigationState.navigate(RecipeFormDestination()) },
                 onCreateFromLink = { /* pendiente: carga por link con IA */ },
-                // TEMPORAL: abre el formulario en modo edición para probarlo.
-                // Se reemplaza por la pantalla de detalle (Paso 4).
-                onRecipeClick = { id -> navigationState.navigate(RecipeFormDestination(id)) },
+                onRecipeClick = { id -> navigationState.navigate(RecipeDetailDestination(id)) },
                 onNotificationsClick = { /* pendiente: notificaciones */ },
                 // navigate() agrega la pantalla encima del back stack de la pestaña actual
                 onAccountClick = { navigationState.navigate(AccountDestination) }
@@ -69,6 +71,22 @@ fun AppNavDisplay(
             )
         }
 
+        entry<RecipeDetailDestination> { key ->
+            val viewModel: RecipeDetailViewModel = hiltViewModel()
+
+            // Igual que en Home: al volver de editar o de registrar un intento, se recarga.
+            LaunchedEffect(key.recipeId) { viewModel.load(key.recipeId) }
+
+            RecipeDetailRoute(
+                viewModel = viewModel,
+                onBack = { navigationState.goBackFrom(key) },
+                onEdit = { id -> navigationState.navigate(RecipeFormDestination(id)) },
+                onRegisterAttempt = { id -> navigationState.navigate(AttemptDestination(id)) },
+                // Al eliminar, el detalle ya no tiene receta que mostrar: se vuelve a Home.
+                onDeleted = { navigationState.goBackFrom(key) }
+            )
+        }
+
         // `key` es la RecipeFormDestination con la que se navegó: de ahí sale el id (o null).
         entry<RecipeFormDestination> { key ->
             val viewModel: RecipeFormViewModel = hiltViewModel()
@@ -80,6 +98,15 @@ fun AppNavDisplay(
                 recipeId = key.recipeId,
                 onBack = { navigationState.goBackFrom(key) },
                 onSaved = { navigationState.goBackFrom(key) }
+            )
+        }
+
+        entry<AttemptDestination> { key ->
+            val viewModel: AttemptViewModel = hiltViewModel()
+            AttemptRoute(
+                viewModel = viewModel,
+                recipeId = key.recipeId,
+                onBack = { navigationState.goBackFrom(key) }
             )
         }
     }

@@ -26,6 +26,8 @@ dependencies {
     implementation(project(":core:firebase"))
 
     implementation(libs.androidx.core.ktx)
+    // Dispatchers.IO: copiar archivos (fotos) fuera del hilo principal
+    implementation(libs.kotlinx.coroutines.core)
 
     // Red: Retrofit convierte una interfaz Kotlin en llamadas HTTP, OkHttp las ejecuta
     implementation(libs.retrofit)

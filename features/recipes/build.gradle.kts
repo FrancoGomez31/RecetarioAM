@@ -37,12 +37,15 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
-    // BackHandler: el botón "atrás" del sistema cierra el selector de origen
+    // BackHandler y los launchers de cámara/galería (rememberLauncherForActivityResult)
     implementation(libs.androidx.activity.compose)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     // Mapa de OpenStreetMap (sin API key)
     implementation(libs.osmdroid.android)
+
+    // Muestra las fotos de los intentos
+    implementation(libs.coil.compose)
 
     // La feature solo necesita Hilt para anotar su ViewModel (@HiltViewModel).
     implementation(libs.hilt.android)
