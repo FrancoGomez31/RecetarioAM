@@ -30,10 +30,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.app.core.domain.Recipe
 import com.app.core.domain.Visibility
 import com.app.core.domain.originLabel
@@ -249,15 +252,22 @@ private fun RecipeCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Placeholder de la foto (se reemplaza cuando carguemos imágenes)
+            // Miniatura: la portada de la receta si la tiene; si no, el recuadro de color de siempre.
             Box(
                 modifier = Modifier
                     .size(72.dp)
-                    .background(
-                        MaterialTheme.colorScheme.primaryContainer,
-                        RoundedCornerShape(12.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+            ) {
+                if (recipe.photoUrl != null) {
+                    AsyncImage(
+                        model = recipe.photoUrl,
+                        contentDescription = "Portada de ${recipe.name}",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
-            )
+                }
+            }
 
             Column(
                 modifier = Modifier.weight(1f),

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.app.core.domain.AppResult
 import com.app.core.domain.Place
 import com.app.core.domain.PlaceType
+import com.app.core.domain.usecase.GetUserLocationUseCase
 import com.app.core.domain.usecase.SearchPlacesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -17,7 +18,8 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class PlacePickerViewModel @Inject constructor(
-    private val searchPlacesUseCase: SearchPlacesUseCase
+    private val searchPlacesUseCase: SearchPlacesUseCase,
+    private val getUserLocationUseCase: GetUserLocationUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlacePickerUiState())
@@ -25,6 +27,17 @@ class PlacePickerViewModel @Inject constructor(
 
     private var searchJob: Job? = null
     private var focusCounter = 0L
+
+    /**
+     * Se llama cada vez que el selector se abre. Casi siempre responde al instante (la caché
+     * ya tiene la ubicación que averiguó la pestaña Mapa); sin permiso queda en null.
+     */
+    fun loadUserLocation() {
+        viewModelScope.launch {
+            val location = getUserLocationUseCase()
+            _uiState.update { it.copy(userLocation = location) }
+        }
+    }
 
     /** Cambiar de nivel (país / ciudad / restaurante) descarta lo anterior: los resultados ya no corresponden. */
     fun onTypeChange(type: PlaceType) {
@@ -104,9 +117,12 @@ class PlacePickerViewModel @Inject constructor(
         _uiState.update { it.copy(showResults = false) }
     }
 
-    /** Se llama al confirmar o cancelar, para que la próxima apertura del selector arranque limpia. */
+    /**
+     * Se llama al confirmar o cancelar, para que la próxima apertura del selector arranque limpia.
+     * La ubicación del usuario se conserva: no es parte de lo que se estaba eligiendo.
+     */
     fun reset() {
         searchJob?.cancel()
-        _uiState.value = PlacePickerUiState()
+        _uiState.update { PlacePickerUiState(userLocation = it.userLocation) }
     }
 }

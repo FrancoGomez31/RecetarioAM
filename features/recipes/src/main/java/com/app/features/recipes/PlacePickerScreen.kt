@@ -61,14 +61,14 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.core.domain.Place
 import com.app.core.domain.PlaceType
+import com.app.core.domain.UserLocation
 import com.app.core.domain.distanceKm
 import com.app.core.ui.RecetarioTheme
 import com.app.core.ui.asMessage
+import com.app.core.ui.formatDistance
 import java.io.File
-import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.abs
-import kotlin.math.roundToInt
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.events.MapListener
@@ -80,11 +80,9 @@ import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 
-// Punto de referencia PROVISORIO para mostrar la distancia. Se reemplaza por la ubicación real del usuario (RF5).
-private const val REFERENCE_NAME = "Buenos Aires"
-private const val REFERENCE_LAT = -34.6037
-private const val REFERENCE_LON = -58.3816
 private const val DEFAULT_ZOOM = 3.0
+// Si todavía no sabemos dónde está el usuario, el mapa abre en una vista de mundo.
+private val WORLD_CENTER = GeoPoint(20.0, 0.0)
 
 private val ArgentineLocale: Locale = Locale.forLanguageTag("es-AR")
 
@@ -109,6 +107,9 @@ fun PlacePickerRoute(
 
     // El botón "atrás" del sistema cierra el selector y vuelve al formulario.
     BackHandler(onBack = onBack)
+
+    // Cada vez que el selector se abre: trae (de la caché, casi siempre) dónde está el usuario.
+    LaunchedEffect(Unit) { viewModel.loadUserLocation() }
 
     PlacePickerScreen(
         state = state,
@@ -322,6 +323,7 @@ private fun MapPanel(
     val place = state.selected
     val pinLatitude = state.pinLatitude
     val pinLongitude = state.pinLongitude
+    val user = state.userLocation
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Box(
@@ -331,10 +333,11 @@ private fun MapPanel(
                 .clip(RoundedCornerShape(16.dp))
         ) {
             OsmMap(
-                initialCenter = if (pinLatitude != null && pinLongitude != null) {
-                    GeoPoint(pinLatitude, pinLongitude)
-                } else {
-                    GeoPoint(REFERENCE_LAT, REFERENCE_LON)
+                // El mapa abre donde ya está el pin; si no hay, cerca del usuario; si tampoco, en el mundo.
+                initialCenter = when {
+                    pinLatitude != null && pinLongitude != null -> GeoPoint(pinLatitude, pinLongitude)
+                    user != null -> GeoPoint(user.latitude, user.longitude)
+                    else -> WORLD_CENTER
                 },
                 initialZoom = if (place != null) zoomFor(place.type) else DEFAULT_ZOOM,
                 focus = state.focus,
@@ -382,7 +385,8 @@ private fun MapPanel(
             SelectedPlaceInfo(
                 place = place,
                 latitude = pinLatitude,
-                longitude = pinLongitude
+                longitude = pinLongitude,
+                user = user
             )
         }
 
@@ -407,10 +411,9 @@ private fun MapPanel(
 private fun SelectedPlaceInfo(
     place: Place,
     latitude: Double,
-    longitude: Double
+    longitude: Double,
+    user: UserLocation?
 ) {
-    val distance = distanceKm(REFERENCE_LAT, REFERENCE_LON, latitude, longitude)
-
     // Scroll propio y alto acotado: así, en pantallas chicas, el mapa no desaparece.
     Column(
         modifier = Modifier
@@ -443,15 +446,20 @@ private fun SelectedPlaceInfo(
                     text = "${formatCoordinate(latitude, "N", "S")} · ${formatCoordinate(longitude, "E", "W")}",
                     style = MaterialTheme.typography.labelLarge
                 )
-                Text(
-                    text = "Desde $REFERENCE_NAME ${formatDistance(distance)}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "Distancia geográfica en línea recta, no distancia de viaje.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+
+                // La distancia solo se muestra si sabemos dónde está el usuario: no se inventa una referencia.
+                if (user != null) {
+                    val distance = distanceKm(user.latitude, user.longitude, latitude, longitude)
+                    Text(
+                        text = "Desde ${user.city.ifBlank { "tu ubicación" }} ${formatDistance(distance)}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Distancia geográfica en línea recta, no distancia de viaje.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
 
@@ -469,7 +477,11 @@ private fun SelectedPlaceInfo(
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(
-                    text = "$REFERENCE_NAME es tu punto de referencia actual. Podés elegir una cocina de cualquier lugar del mundo.",
+                    text = if (user != null) {
+                        "${user.city.ifBlank { "Tu ubicación" }} es tu punto de referencia actual. Podés elegir una cocina de cualquier lugar del mundo."
+                    } else {
+                        "Tu ubicación solo sirve de referencia para la distancia. Podés elegir una cocina de cualquier lugar del mundo."
+                    },
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -613,13 +625,6 @@ private fun placeDetail(place: Place): String {
 private fun formatCoordinate(value: Double, positive: String, negative: String): String {
     val hemisphere = if (value >= 0) positive else negative
     return String.format(ArgentineLocale, "%.4f° %s", abs(value), hemisphere)
-}
-
-/** Redondea para que no parezca más preciso de lo que es: "≈ 11.200 km". */
-private fun formatDistance(km: Double): String {
-    if (km < 10) return "< 10 km"
-    val rounded = if (km >= 1000) (km / 100).roundToInt() * 100 else (km / 10).roundToInt() * 10
-    return "≈ ${NumberFormat.getIntegerInstance(ArgentineLocale).format(rounded)} km"
 }
 
 @Preview(showBackground = true, heightDp = 700)

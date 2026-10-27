@@ -61,29 +61,23 @@ import coil3.compose.AsyncImage
 import com.app.core.domain.Attempt
 import com.app.core.domain.Ingredient
 import com.app.core.domain.Recipe
+import com.app.core.domain.UserLocation
 import com.app.core.domain.Visibility
 import com.app.core.domain.distanceKm
 import com.app.core.domain.originLabel
 import com.app.core.ui.RecetarioTheme
 import com.app.core.ui.asMessage
+import com.app.core.ui.formatDistance
 import java.io.File
-import java.text.NumberFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import kotlin.math.roundToInt
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
-
-// Punto de referencia PROVISORIO para la distancia (igual que en el selector de origen).
-// Se reemplaza por la ubicación real del usuario (RF5).
-private const val REFERENCE_NAME = "Buenos Aires"
-private const val REFERENCE_LAT = -34.6037
-private const val REFERENCE_LON = -58.3816
 
 private val ArgentineLocale: Locale = Locale.forLanguageTag("es-AR")
 private val DayFormatter = DateTimeFormatter.ofPattern("d MMM", ArgentineLocale)
@@ -206,20 +200,31 @@ private fun RecipeDetailContent(
             )
         }
 
-        // Portada provisoria: se reemplaza cuando carguemos fotos de portada.
+        // Portada: la foto de la receta si la tiene (es opcional); si no, un recuadro con un ícono.
+        // clip y no solo background: así la foto también respeta las esquinas redondeadas.
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp)
-                .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(20.dp)),
+                .clip(RoundedCornerShape(20.dp))
+                .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Outlined.Restaurant,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(36.dp)
-            )
+            if (recipe.photoUrl != null) {
+                AsyncImage(
+                    model = recipe.photoUrl,
+                    contentDescription = "Portada de ${recipe.name}",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Outlined.Restaurant,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(36.dp)
+                )
+            }
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -246,7 +251,7 @@ private fun RecipeDetailContent(
 
         IngredientsBlock(recipe = recipe)
         StepsBlock(recipe = recipe)
-        OriginBlock(recipe = recipe)
+        OriginBlock(recipe = recipe, user = state.userLocation)
         ProgressBlock(recipe = recipe, attempts = state.attempts, onRegisterAttempt = actions.onRegisterAttempt)
     }
 }
@@ -354,7 +359,10 @@ private fun StepsBlock(recipe: Recipe) {
 }
 
 @Composable
-private fun OriginBlock(recipe: Recipe) {
+private fun OriginBlock(
+    recipe: Recipe,
+    user: UserLocation?
+) {
     val latitude = recipe.latitude
     val longitude = recipe.longitude
 
@@ -383,15 +391,16 @@ private fun OriginBlock(recipe: Recipe) {
                 modifier = Modifier.padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                if (latitude != null && longitude != null) {
-                    val distance = distanceKm(REFERENCE_LAT, REFERENCE_LON, latitude, longitude)
+                if (latitude != null && longitude != null && user != null) {
+                    // La distancia sale de la ubicación real del usuario; el nombre, de su ciudad.
+                    val distance = distanceKm(user.latitude, user.longitude, latitude, longitude)
                     Text(
                         text = "${recipe.originLabel}  ${formatDistance(distance)}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "Origen a nivel de ${originLevelLabel(recipe)} desde $REFERENCE_NAME",
+                        text = "Origen a nivel de ${originLevelLabel(recipe)} desde ${user.city.ifBlank { "tu ubicación" }}",
                         style = MaterialTheme.typography.bodySmall
                     )
                     Text(
@@ -410,6 +419,14 @@ private fun OriginBlock(recipe: Recipe) {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    // Sin ubicación no hay distancia: se avisa cómo conseguirla en vez de inventar una.
+                    if (latitude != null && longitude != null) {
+                        Text(
+                            text = "Activá tu ubicación desde la pestaña Mapa para ver la distancia desde donde cocinás.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }
@@ -646,13 +663,6 @@ private fun originZoom(recipe: Recipe): Double = when {
     recipe.restaurant.isNotBlank() -> 15.0
     recipe.city.isNotBlank() -> 11.0
     else -> 5.0
-}
-
-/** Redondea para que no parezca más preciso de lo que es: "≈ 11.200 km". */
-private fun formatDistance(km: Double): String {
-    if (km < 10) return "< 10 km"
-    val rounded = if (km >= 1000) (km / 100).roundToInt() * 100 else (km / 10).roundToInt() * 10
-    return "≈ ${NumberFormat.getIntegerInstance(ArgentineLocale).format(rounded)} km"
 }
 
 /** "28 sep": día y mes abreviado, sin el punto que agrega el formato de la región. */

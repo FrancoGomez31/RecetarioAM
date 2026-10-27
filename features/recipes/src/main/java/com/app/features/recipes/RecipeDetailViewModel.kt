@@ -6,6 +6,7 @@ import com.app.core.domain.AppResult
 import com.app.core.domain.usecase.DeleteRecipeUseCase
 import com.app.core.domain.usecase.GetAttemptsUseCase
 import com.app.core.domain.usecase.GetRecipeUseCase
+import com.app.core.domain.usecase.GetUserLocationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 class RecipeDetailViewModel @Inject constructor(
     private val getRecipeUseCase: GetRecipeUseCase,
     private val getAttemptsUseCase: GetAttemptsUseCase,
+    private val getUserLocationUseCase: GetUserLocationUseCase,
     private val deleteRecipeUseCase: DeleteRecipeUseCase
 ) : ViewModel() {
 
@@ -46,6 +48,11 @@ class RecipeDetailViewModel @Inject constructor(
             if (attemptsResult is AppResult.Success) {
                 _uiState.update { it.copy(attempts = attemptsResult.data) }
             }
+
+            // La ubicación también: sin ella (sin permiso, GPS apagado) no se muestra la distancia.
+            // Va al final para que la receta aparezca sin esperar al GPS.
+            val location = getUserLocationUseCase()
+            _uiState.update { it.copy(userLocation = location) }
         }
     }
 

@@ -38,7 +38,7 @@ class RecipeFormViewModel @Inject constructor(
     )
     val uiState: StateFlow<RecipeFormUiState> = _uiState.asStateFlow()
 
-    /** Receta que se está editando: de ahí salen los datos que el formulario no muestra (foto, intentos). */
+    /** Receta que se está editando: de ahí salen los datos que el formulario no muestra (intentos, etc.). */
     private var original: Recipe? = null
 
     /** La pantalla llama a start() cada vez que se compone; solo la primera vez hace algo. */
@@ -78,6 +78,20 @@ class RecipeFormViewModel @Inject constructor(
     }
 
     fun onVisibilityChange(value: Visibility) = _uiState.update { it.copy(visibility = value) }
+
+    // --- Portada (opcional) ---
+
+    /** La cámara o la galería entregaron una foto: queda como portada hasta que se guarde la receta. */
+    fun onCoverSelected(uri: String) = _uiState.update {
+        it.copy(coverUri = uri, coverIsNew = true, coverMessage = null)
+    }
+
+    fun onCoverRemoved() = _uiState.update {
+        it.copy(coverUri = null, coverIsNew = false, coverMessage = null)
+    }
+
+    /** No se pudo abrir la cámara (sin permiso, o el teléfono no tiene app de cámara). */
+    fun onCoverUnavailable(message: String) = _uiState.update { it.copy(coverMessage = message) }
 
     // --- Origen ---
 
@@ -136,7 +150,9 @@ class RecipeFormViewModel @Inject constructor(
         _uiState.update { it.copy(isSaving = true, error = null, invalidFields = emptySet()) }
 
         viewModelScope.launch {
-            when (val result = saveRecipeUseCase(state.toRecipe())) {
+            // Solo una portada recién elegida viaja como URI temporal: el caso de uso la guarda.
+            val newCover = state.coverUri.takeIf { state.coverIsNew }
+            when (val result = saveRecipeUseCase(state.toRecipe(), newCoverUri = newCover)) {
                 is AppResult.Success -> _uiState.update { it.copy(isSaving = false, saved = true) }
                 is AppResult.Error -> _uiState.update {
                     it.copy(
@@ -183,7 +199,10 @@ class RecipeFormViewModel @Inject constructor(
             longitude = longitude,
             visibility = visibility,
             ingredients = ingredients.map { Ingredient(quantity = it.quantity, name = it.name) },
-            steps = steps.map { it.text }
+            steps = steps.map { it.text },
+            // Portada nueva: se deja la que había hasta que el caso de uso guarde la foto y ponga la definitiva.
+            // Sin cambios o quitada: coverUri ya es lo que corresponde (la misma de antes, o null).
+            photoUrl = if (coverIsNew) base.photoUrl else coverUri
         )
     }
 
@@ -200,6 +219,8 @@ class RecipeFormViewModel @Inject constructor(
         latitude = latitude,
         longitude = longitude,
         visibility = visibility,
+        coverUri = photoUrl,
+        coverIsNew = false,
         ingredients = ingredients
             .map { IngredientInput(newRowId(), it.quantity, it.name) }
             .ifEmpty { listOf(IngredientInput(newRowId())) },

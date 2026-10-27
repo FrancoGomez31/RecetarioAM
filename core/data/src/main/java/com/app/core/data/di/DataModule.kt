@@ -4,6 +4,7 @@ import com.app.core.data.FakeAttemptRepository
 import com.app.core.data.FakeRecipeRepository
 import com.app.core.data.FirebaseAuthRepository
 import com.app.core.data.FusedLocationProvider
+import com.app.core.data.InMemoryUserLocationCache
 import com.app.core.data.LocalPhotoStorage
 import com.app.core.data.NominatimPlaceRepository
 import com.app.core.domain.AttemptRepository
@@ -12,6 +13,7 @@ import com.app.core.domain.LocationProvider
 import com.app.core.domain.PhotoStorage
 import com.app.core.domain.PlaceRepository
 import com.app.core.domain.RecipeRepository
+import com.app.core.domain.UserLocationCache
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -25,7 +27,8 @@ import javax.inject.Singleton
  * lugares usa Nominatim (OpenStreetMap) y la ubicación sale de Google Play Services.
  *
  * @Singleton: una sola instancia para toda la app. Los repositorios falsos guardan
- * datos en memoria, y sin esto cada pantalla tendría su propia copia.
+ * datos en memoria, y sin esto cada pantalla tendría su propia copia. Lo mismo vale para
+ * la caché de ubicación: tiene que ser la misma para el mapa, el detalle y el selector.
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -54,4 +57,8 @@ abstract class DataModule {
     @Binds
     @Singleton
     abstract fun bindLocationProvider(impl: FusedLocationProvider): LocationProvider
+
+    @Binds
+    @Singleton
+    abstract fun bindUserLocationCache(impl: InMemoryUserLocationCache): UserLocationCache
 }
