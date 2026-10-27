@@ -41,10 +41,22 @@ class FakeRecipeRepository @Inject constructor() : RecipeRepository {
             latitude = 40.8518,
             longitude = 14.2681
         ),
-        Recipe("2", "Ramen shoyu", null, "Kioto", "Japón", 50, 1, Visibility.PRIVATE),
-        Recipe("3", "Empanadas criollas", null, "Córdoba", "Argentina", 70, 3, Visibility.PUBLIC),
-        Recipe("4", "Pizza margherita", null, "Nápoles", "Italia", 90, 0, Visibility.PRIVATE),
-        Recipe("5", "Frittata di pasta", null, "Nápoles", "Italia", 25, 1, Visibility.PRIVATE)
+        Recipe(
+            "2", "Ramen shoyu", null, "Kioto", "Japón", 50, 1, Visibility.PRIVATE,
+            latitude = 35.0116, longitude = 135.7681
+        ),
+        Recipe(
+            "3", "Empanadas criollas", null, "Córdoba", "Argentina", 70, 3, Visibility.PUBLIC,
+            latitude = -31.4201, longitude = -64.1888
+        ),
+        Recipe(
+            "4", "Pizza margherita", null, "Nápoles", "Italia", 90, 0, Visibility.PRIVATE,
+            latitude = 40.8518, longitude = 14.2681
+        ),
+        Recipe(
+            "5", "Frittata di pasta", null, "Nápoles", "Italia", 25, 1, Visibility.PRIVATE,
+            latitude = 40.8518, longitude = 14.2681
+        )
     )
 
     override suspend fun getRecipes(): AppResult<List<Recipe>> {

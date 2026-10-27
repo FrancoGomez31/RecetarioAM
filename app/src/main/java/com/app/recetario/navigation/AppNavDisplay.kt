@@ -13,6 +13,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.app.features.account.AccountRoute
 import com.app.features.account.AccountViewModel
+import com.app.features.map.MapRoute
+import com.app.features.map.MapViewModel
 import com.app.features.recipes.AttemptRoute
 import com.app.features.recipes.AttemptViewModel
 import com.app.features.recipes.PlacePickerViewModel
@@ -58,7 +60,14 @@ fun AppNavDisplay(
             )
         }
 
-        entry<MapDestination> { ComingSoonScreen(title = "Mapa") }
+        entry<MapDestination> {
+            val viewModel: MapViewModel = hiltViewModel()
+            MapRoute(
+                viewModel = viewModel,
+                // El detalle se abre encima de la pestaña Mapa: al volver, el atlas sigue donde estaba.
+                onRecipeClick = { id -> navigationState.navigate(RecipeDetailDestination(id)) }
+            )
+        }
         entry<ExploreDestination> { ComingSoonScreen(title = "Explorar") }
         entry<AchievementsDestination> { ComingSoonScreen(title = "Logros") }
 

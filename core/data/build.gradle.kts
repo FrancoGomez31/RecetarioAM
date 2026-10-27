@@ -35,6 +35,9 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
 
+    // Ubicación del dispositivo (FusedLocationProviderClient)
+    implementation(libs.play.services.location)
+
     // Hilt: KSP genera el código de inyección de este módulo
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

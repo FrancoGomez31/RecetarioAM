@@ -28,6 +28,8 @@ okhttp = "4.12.0"
 osmdroid = "6.1.20"
 # Imágenes: Coil muestra las fotos (archivos locales hoy, URLs de la nube después).
 coil = "3.3.0"
+# Ubicación del dispositivo (RF5): proveedor de Google Play Services, sin API key.
+playServicesLocation = "21.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -77,6 +79,9 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 
 # --- Mapa ---
 osmdroid-android = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
+
+# --- Ubicación ---
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 # --- Imágenes ---
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }

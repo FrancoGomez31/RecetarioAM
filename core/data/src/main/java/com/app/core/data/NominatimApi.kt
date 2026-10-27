@@ -22,6 +22,17 @@ interface NominatimApi {
         @Query("limit") limit: Int = 10,
         @Query("accept-language") language: String = "es"
     ): List<NominatimResultDto>
+
+    /** De coordenadas a lugar. zoom = 10 devuelve el nivel de ciudad (no la calle). */
+    @GET("reverse")
+    suspend fun reverse(
+        @Query("lat") latitude: Double,
+        @Query("lon") longitude: Double,
+        @Query("format") format: String = "jsonv2",
+        @Query("zoom") zoom: Int = 10,
+        @Query("addressdetails") addressDetails: Int = 1,
+        @Query("accept-language") language: String = "es"
+    ): NominatimReverseDto
 }
 
 // DTOs: reflejan el JSON tal cual llega. Son detalle de esta capa; el dominio solo ve Place.
@@ -34,6 +45,15 @@ data class NominatimResultDto(
     val name: String? = null,
     val category: String? = null,
     val type: String? = null,
+    val address: NominatimAddressDto? = null
+)
+
+/**
+ * La búsqueda inversa devuelve un solo objeto, y si no hay nada en ese punto (por ejemplo,
+ * en medio del océano) trae un campo "error" en lugar de "address": por eso todo es opcional.
+ */
+@Serializable
+data class NominatimReverseDto(
     val address: NominatimAddressDto? = null
 )
 
