@@ -6,12 +6,14 @@ import com.app.core.data.FirebaseAuthRepository
 import com.app.core.data.FusedLocationProvider
 import com.app.core.data.LocalPhotoStorage
 import com.app.core.data.NominatimPlaceRepository
+import com.app.core.data.reminder.AndroidReminderScheduler
 import com.app.core.domain.AttemptRepository
 import com.app.core.domain.AuthRepository
 import com.app.core.domain.LocationProvider
 import com.app.core.domain.PhotoStorage
 import com.app.core.domain.PlaceRepository
 import com.app.core.domain.RecipeRepository
+import com.app.core.domain.ReminderScheduler
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -54,4 +56,8 @@ abstract class DataModule {
     @Binds
     @Singleton
     abstract fun bindLocationProvider(impl: FusedLocationProvider): LocationProvider
+
+    @Binds
+    @Singleton
+    abstract fun bindReminderScheduler(impl: AndroidReminderScheduler): ReminderScheduler
 }

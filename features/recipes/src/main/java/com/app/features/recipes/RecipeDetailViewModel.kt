@@ -6,6 +6,7 @@ import com.app.core.domain.AppResult
 import com.app.core.domain.usecase.DeleteRecipeUseCase
 import com.app.core.domain.usecase.GetAttemptsUseCase
 import com.app.core.domain.usecase.GetRecipeUseCase
+import com.app.core.domain.usecase.SetRecipeReminderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +19,8 @@ import kotlinx.coroutines.launch
 class RecipeDetailViewModel @Inject constructor(
     private val getRecipeUseCase: GetRecipeUseCase,
     private val getAttemptsUseCase: GetAttemptsUseCase,
-    private val deleteRecipeUseCase: DeleteRecipeUseCase
+    private val deleteRecipeUseCase: DeleteRecipeUseCase,
+    private val setRecipeReminderUseCase: SetRecipeReminderUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RecipeDetailUiState())
@@ -59,6 +61,17 @@ class RecipeDetailViewModel @Inject constructor(
             when (val result = deleteRecipeUseCase(recipe.id)) {
                 is AppResult.Success -> _uiState.update { it.copy(isDeleting = false, deleted = true) }
                 is AppResult.Error -> _uiState.update { it.copy(isDeleting = false, error = result.error) }
+            }
+        }
+    }
+
+    fun onToggleReminder(triggerAtMillis: Long?) {
+        val state = _uiState.value
+        val recipe = state.recipe ?: return
+        viewModelScope.launch {
+            when (val result = setRecipeReminderUseCase(recipe, triggerAtMillis)) {
+                is AppResult.Success -> _uiState.update { it.copy(recipe = result.data) }
+                is AppResult.Error -> _uiState.update { it.copy(error = result.error) }
             }
         }
     }

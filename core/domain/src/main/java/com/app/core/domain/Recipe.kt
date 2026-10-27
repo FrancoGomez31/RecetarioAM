@@ -18,7 +18,9 @@ data class Recipe(
     val latitude: Double? = null,
     val longitude: Double? = null,
     /** Nombre del restaurante de origen; vacío si el origen es una ciudad o un país. */
-    val restaurant: String = ""
+    val restaurant: String = "",
+    /** Fecha y hora programada para cocinar (epoch millis), o null si no tiene recordatorio activo. */
+    val reminderEpochMillis: Long? = null
 )
 
 /** La cantidad es texto libre ("1 kg", "2 cdas.", "A gusto") porque así se escribe en una receta. */

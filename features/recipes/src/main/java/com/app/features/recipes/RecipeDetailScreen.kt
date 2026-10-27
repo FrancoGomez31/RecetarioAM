@@ -22,6 +22,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -32,6 +34,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -92,7 +95,8 @@ data class RecipeDetailActions(
     val onBack: () -> Unit = {},
     val onEdit: () -> Unit = {},
     val onDeleteClick: () -> Unit = {},
-    val onRegisterAttempt: () -> Unit = {}
+    val onRegisterAttempt: () -> Unit = {},
+    val onToggleReminder: (Long?) -> Unit = {}
 )
 
 @Composable
@@ -115,7 +119,8 @@ fun RecipeDetailRoute(
             onBack = onBack,
             onEdit = { state.recipe?.let { onEdit(it.id) } },
             onDeleteClick = { showDeleteDialog = true },
-            onRegisterAttempt = { state.recipe?.let { onRegisterAttempt(it.id) } }
+            onRegisterAttempt = { state.recipe?.let { onRegisterAttempt(it.id) } },
+            onToggleReminder = viewModel::onToggleReminder
         )
     )
 
@@ -247,6 +252,7 @@ private fun RecipeDetailContent(
         IngredientsBlock(recipe = recipe)
         StepsBlock(recipe = recipe)
         OriginBlock(recipe = recipe)
+        ReminderBlock(recipe = recipe, onToggleReminder = actions.onToggleReminder)
         ProgressBlock(recipe = recipe, attempts = state.attempts, onRegisterAttempt = actions.onRegisterAttempt)
     }
 }
@@ -412,6 +418,70 @@ private fun OriginBlock(recipe: Recipe) {
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ReminderBlock(
+    recipe: Recipe,
+    onToggleReminder: (Long?) -> Unit
+) {
+    val isReminderSet = recipe.reminderEpochMillis != null
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(
+                    imageVector = if (isReminderSet) Icons.Outlined.NotificationsActive else Icons.Outlined.Notifications,
+                    contentDescription = null,
+                    tint = if (isReminderSet) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Column {
+                    Text(
+                        text = "Recordatorio para cocinar",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = if (isReminderSet) {
+                            "Aviso programado para cocinar esta receta"
+                        } else {
+                            "Sin programar (avisarme en 10 segundos para probar)"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Switch(
+                checked = isReminderSet,
+                onCheckedChange = { checked ->
+                    if (checked) {
+                        // Para prueba rápida y funcional: dispara a los 10 segundos
+                        val triggerTime = System.currentTimeMillis() + 10_000L
+                        onToggleReminder(triggerTime)
+                    } else {
+                        onToggleReminder(null)
+                    }
+                }
+            )
         }
     }
 }
