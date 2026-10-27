@@ -44,6 +44,9 @@ dependencies {
     // Mapa de OpenStreetMap (sin API key)
     implementation(libs.osmdroid.android)
 
+    // Muestra la portada de la receta en la tarjeta del origen
+    implementation(libs.coil.compose)
+
     // La feature solo necesita Hilt para anotar su ViewModel (@HiltViewModel).
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

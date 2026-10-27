@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,6 +52,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.app.core.domain.RecipeOrigin
 import com.app.core.domain.UserLocation
 import com.app.core.domain.distanceKm
@@ -431,12 +433,22 @@ private fun SelectedOriginCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Placeholder de la foto (se reemplaza cuando carguemos fotos de portada)
+                    // Miniatura: la portada de la receta si la tiene; si no, el recuadro de color de siempre.
                     Box(
                         modifier = Modifier
                             .size(72.dp)
-                            .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(12.dp))
-                    )
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                    ) {
+                        if (featured.photoUrl != null) {
+                            AsyncImage(
+                                model = featured.photoUrl,
+                                contentDescription = "Portada de ${featured.name}",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
                     Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(
                             text = featured.name,

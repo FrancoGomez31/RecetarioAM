@@ -48,12 +48,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.app.core.domain.RecipeField
 import com.app.core.domain.Visibility
 import com.app.core.ui.RecetarioTheme
@@ -66,6 +69,9 @@ data class RecipeFormActions(
     val onDescriptionChange: (String) -> Unit = {},
     val onServingsChange: (String) -> Unit = {},
     val onPrepTimeChange: (String) -> Unit = {},
+    val onTakeCover: () -> Unit = {},
+    val onPickCoverFromGallery: () -> Unit = {},
+    val onRemoveCover: () -> Unit = {},
     val onOriginClick: () -> Unit = {},
     val onVisibilityChange: (Visibility) -> Unit = {},
     val onIngredientQuantityChange: (Long, String) -> Unit = { _, _ -> },
@@ -96,6 +102,13 @@ fun RecipeFormRoute(
     // composición, y sin esto volvería siempre arriba de todo.
     val scrollState = rememberScrollState()
 
+    // Cámara y galería de la portada. Se registran acá (y no dentro del formulario) para que
+    // sigan activos mientras el selector de origen tapa la pantalla.
+    val photoPicker = rememberPhotoPicker(
+        onPhotoSelected = viewModel::onCoverSelected,
+        onUnavailable = viewModel::onCoverUnavailable
+    )
+
     // El ViewModel ignora llamadas repetidas, así que una rotación no recarga ni pisa lo escrito.
     LaunchedEffect(recipeId) { viewModel.start(recipeId) }
     LaunchedEffect(state.saved) { if (state.saved) onSaved() }
@@ -123,6 +136,9 @@ fun RecipeFormRoute(
                 onDescriptionChange = viewModel::onDescriptionChange,
                 onServingsChange = viewModel::onServingsChange,
                 onPrepTimeChange = viewModel::onPrepTimeChange,
+                onTakeCover = photoPicker.takePhoto,
+                onPickCoverFromGallery = photoPicker.pickFromGallery,
+                onRemoveCover = viewModel::onCoverRemoved,
                 onOriginClick = { showOriginPicker = true },
                 onVisibilityChange = viewModel::onVisibilityChange,
                 onIngredientQuantityChange = viewModel::onIngredientQuantityChange,
@@ -163,8 +179,7 @@ fun RecipeFormScreen(
             ) {
                 FormHeader(state = state, onBack = actions.onBack)
 
-                // Provisorio: la portada necesita cámara/galería y dónde guardar la foto (paso aparte).
-                CoverPlaceholder()
+                CoverSection(state = state, actions = actions)
 
                 FormField(label = "Nombre de la receta *") {
                     val invalid = RecipeField.NAME in state.invalidFields
@@ -294,30 +309,73 @@ private fun FormHeader(
     }
 }
 
+/** Portada opcional: la foto de la receta (o un lugar vacío), con cámara, galería y la opción de quitarla. */
 @Composable
-private fun CoverPlaceholder() {
-    FormField(label = "Portada") {
+private fun CoverSection(
+    state: RecipeFormUiState,
+    actions: RecipeFormActions
+) {
+    FormField(label = "Portada (opcional)") {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(140.dp)
-                    .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(16.dp)),
+                    .height(160.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.PhotoCamera,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                if (state.coverUri != null) {
+                    AsyncImage(
+                        model = state.coverUri,
+                        contentDescription = "Portada de la receta",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Outlined.PhotoCamera,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
-            OutlinedButton(
-                onClick = {},
-                enabled = false,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(50)
-            ) {
-                Text("Cambiar foto · Próximamente")
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = actions.onTakeCover,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(50)
+                ) {
+                    Text(if (state.coverUri == null) "Tomar foto" else "Volver a tomar")
+                }
+                OutlinedButton(
+                    onClick = actions.onPickCoverFromGallery,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(50)
+                ) {
+                    Text("Galería")
+                }
+            }
+
+            if (state.coverUri != null) {
+                TextButton(onClick = actions.onRemoveCover) {
+                    Text("Quitar portada")
+                }
+            }
+
+            if (state.coverMessage != null) {
+                Text(
+                    text = state.coverMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            } else {
+                Text(
+                    text = "Elegí una foto de la galería o tomá una con la cámara.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -587,7 +645,7 @@ private fun FormField(
 private fun requiredMessage(show: Boolean, message: String): (@Composable () -> Unit)? =
     if (show) ({ Text(message) }) else null
 
-@Preview(showBackground = true, heightDp = 1600)
+@Preview(showBackground = true, heightDp = 1800)
 @Composable
 private fun RecipeFormScreenPreview() {
     RecetarioTheme {

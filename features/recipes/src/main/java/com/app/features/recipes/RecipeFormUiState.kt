@@ -40,6 +40,13 @@ data class RecipeFormUiState(
     val ingredients: List<IngredientInput> = emptyList(),
     val steps: List<StepInput> = emptyList(),
 
+    /** La portada que se muestra: la que ya tenía la receta o la recién elegida. Null = sin portada (es opcional). */
+    val coverUri: String? = null,
+    /** true = [coverUri] es una foto recién elegida (URI temporal) que todavía hay que guardar al guardar la receta. */
+    val coverIsNew: Boolean = false,
+    /** Aviso sobre la portada (por ejemplo, "sin permiso de cámara"), para mostrarlo junto a ella. */
+    val coverMessage: String? = null,
+
     /** Campos que el dominio rechazó en el último intento de guardar. */
     val invalidFields: Set<RecipeField> = emptySet(),
     val error: DomainError? = null

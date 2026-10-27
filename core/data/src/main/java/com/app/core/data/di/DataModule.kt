@@ -5,6 +5,7 @@ import com.app.core.data.firestore.FirestoreAttemptRepository
 import com.app.core.data.firestore.FirestoreRecipeRepository
 import com.app.core.data.FirebaseAuthRepository
 import com.app.core.data.FusedLocationProvider
+import com.app.core.data.InMemoryUserLocationCache
 import com.app.core.data.LocalPhotoStorage
 import com.app.core.data.NominatimPlaceRepository
 import com.app.core.data.reminder.AndroidReminderScheduler
@@ -16,6 +17,7 @@ import com.app.core.domain.PlaceRepository
 import com.app.core.domain.RecipeLinkExtractor
 import com.app.core.domain.RecipeRepository
 import com.app.core.domain.ReminderScheduler
+import com.app.core.domain.UserLocationCache
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -57,4 +59,7 @@ abstract class DataModule {
 
     @Binds @Singleton
     abstract fun bindRecipeLinkExtractor(impl: GeminiLinkExtractor): RecipeLinkExtractor
+
+    @Binds @Singleton
+    abstract fun bindUserLocationCache(impl: InMemoryUserLocationCache): UserLocationCache
 }
