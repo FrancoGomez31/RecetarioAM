@@ -23,7 +23,16 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Lee la key de local.properties (nunca va a Git) y la expone como BuildConfig.GEMINI_API_KEY
-        val geminiKey = project.findProperty("gemini.api.key")?.toString() ?: ""
+        val localPropsFile = rootProject.file("local.properties")
+        val geminiKey = if (localPropsFile.exists()) {
+            localPropsFile.readLines()
+                .firstOrNull { it.startsWith("gemini.api.key=") }
+                ?.substringAfter("gemini.api.key=")
+                ?.trim()
+                ?: ""
+        } else {
+            ""
+        }
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
     }
 
