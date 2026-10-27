@@ -1,32 +1,48 @@
 package com.app.recetario.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.app.core.ui.R
 import com.app.recetario.navigation.AppNavDisplay
 import com.app.recetario.navigation.NavigationState
 import com.app.recetario.navigation.TopLevelDestination
 import com.app.recetario.navigation.rememberNavigationState
 
-/** Estructura general de la app (ya con sesión iniciada): barra inferior + NavDisplay. */
 @Composable
 fun AppShell(
+    isOnline: Boolean = true,
     navigationState: NavigationState = rememberNavigationState()
 ) {
     Scaffold(
         bottomBar = {
-            // Leer navigationState acá es leer estado: cuando cambia el back stack, esto se recompone solo.
-            // La barra solo se muestra en la pantalla principal de cada pestaña, no en los detalles.
             AnimatedVisibility(
                 visible = navigationState.isOnTabRoot,
                 enter = slideInVertically { it },
@@ -39,14 +55,52 @@ fun AppShell(
             }
         }
     ) { innerPadding ->
-        AppNavDisplay(
-            navigationState = navigationState,
-            // consumeWindowInsets: el Scaffold ya aplicó los márgenes del sistema,
-            // así las pantallas no vuelven a sumarlos.
+        Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding)
-        )
+        ) {
+            AnimatedVisibility(
+                visible = !isOnline,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                OfflineBanner()
+            }
+
+            AppNavDisplay(
+                navigationState = navigationState,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun OfflineBanner() {
+    Surface(
+        color = MaterialTheme.colorScheme.errorContainer,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.CloudOff,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = stringResource(R.string.offline_banner_title) + " · " + stringResource(R.string.offline_banner_subtitle),
+                style = MaterialTheme.typography.labelSmall
+            )
+        }
     }
 }
 

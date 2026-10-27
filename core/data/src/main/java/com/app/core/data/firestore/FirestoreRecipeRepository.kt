@@ -1,6 +1,7 @@
 package com.app.core.data.firestore
 
 import android.util.Log
+import com.app.core.data.LocalRecipeCache
 import com.app.core.domain.AppResult
 import com.app.core.domain.DomainError
 import com.app.core.domain.Ingredient
@@ -18,7 +19,8 @@ import kotlinx.coroutines.withContext
 
 class FirestoreRecipeRepository @Inject constructor(
     private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val localCache: LocalRecipeCache
 ) : RecipeRepository {
 
     private fun userRecipesCollection(uid: String) =
@@ -29,12 +31,18 @@ class FirestoreRecipeRepository @Inject constructor(
         try {
             val snapshot = userRecipesCollection(uid).get().await()
             val list = snapshot.documents.mapNotNull { it.toRecipe() }
+            localCache.save(list)
             AppResult.Success(list)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.e("FirestoreRecipeRepo", "Error al obtener recetas de Firestore", e)
-            AppResult.Error(mapFirestoreError(e))
+            Log.e("FirestoreRecipeRepo", "Error al obtener recetas de Firestore, intentando caché local", e)
+            val cached = localCache.load()
+            if (cached.isNotEmpty()) {
+                AppResult.Success(cached)
+            } else {
+                AppResult.Error(mapFirestoreError(e))
+            }
         }
     }
 
@@ -43,12 +51,18 @@ class FirestoreRecipeRepository @Inject constructor(
         try {
             val doc = userRecipesCollection(uid).document(id).get().await()
             val recipe = doc.toRecipe() ?: return@withContext AppResult.Error(DomainError.NotFound)
+            localCache.saveSingle(recipe)
             AppResult.Success(recipe)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.e("FirestoreRecipeRepo", "Error al obtener receta $id", e)
-            AppResult.Error(mapFirestoreError(e))
+            Log.e("FirestoreRecipeRepo", "Error al obtener receta $id de Firestore, intentando caché", e)
+            val cached = localCache.load().firstOrNull { it.id == id }
+            if (cached != null) {
+                AppResult.Success(cached)
+            } else {
+                AppResult.Error(mapFirestoreError(e))
+            }
         }
     }
 
@@ -59,6 +73,7 @@ class FirestoreRecipeRepository @Inject constructor(
             val docRef = if (recipe.id.isBlank()) collection.document() else collection.document(recipe.id)
             val toSave = recipe.copy(id = docRef.id)
             docRef.set(toSave.toMap()).await()
+            localCache.saveSingle(toSave)
             AppResult.Success(toSave)
         } catch (e: CancellationException) {
             throw e
@@ -72,6 +87,7 @@ class FirestoreRecipeRepository @Inject constructor(
         val uid = auth.currentUser?.uid ?: return@withContext AppResult.Error(DomainError.Unauthenticated)
         try {
             userRecipesCollection(uid).document(id).delete().await()
+            localCache.delete(id)
             AppResult.Success(Unit)
         } catch (e: CancellationException) {
             throw e

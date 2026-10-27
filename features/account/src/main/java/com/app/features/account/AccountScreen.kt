@@ -32,6 +32,7 @@ import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -58,6 +60,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.core.domain.LanguagePreference
+import com.app.core.domain.ThemePreference
+import com.app.core.ui.R
 import com.app.core.ui.RecetarioTheme
 import com.app.core.ui.asMessage
 
@@ -69,11 +74,9 @@ fun AccountRoute(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    // Los permisos son del sistema Android, no de nuestra lógica de negocio: se leen acá, en la UI.
     var locationGranted by remember { mutableStateOf(context.isLocationGranted()) }
     var cameraGranted by remember { mutableStateOf(context.isGranted(Manifest.permission.CAMERA)) }
 
-    // El usuario los cambia en Ajustes y vuelve a la app: al reanudar, los leemos de nuevo.
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         locationGranted = context.isLocationGranted()
         cameraGranted = context.isGranted(Manifest.permission.CAMERA)
@@ -85,6 +88,8 @@ fun AccountRoute(
         cameraGranted = cameraGranted,
         onBack = onBack,
         onNameChange = viewModel::onNameChange,
+        onThemeChange = viewModel::onThemeChange,
+        onLanguageChange = viewModel::onLanguageChange,
         onSave = viewModel::onSave,
         onOpenSettings = { context.openAppSettings() },
         onSignOut = viewModel::onSignOut
@@ -98,6 +103,8 @@ fun AccountScreen(
     cameraGranted: Boolean,
     onBack: () -> Unit,
     onNameChange: (String) -> Unit,
+    onThemeChange: (ThemePreference) -> Unit,
+    onLanguageChange: (LanguagePreference) -> Unit,
     onSave: () -> Unit,
     onOpenSettings: () -> Unit,
     onSignOut: () -> Unit
@@ -116,30 +123,30 @@ fun AccountScreen(
             Header(savedName = state.savedName, onBack = onBack)
 
             Text(
-                text = "Tus datos",
+                text = stringResource(R.string.account_your_data),
                 style = MaterialTheme.typography.headlineSmall
             )
 
-            LabeledField(label = "Nombre") {
+            LabeledField(label = stringResource(R.string.account_name)) {
                 OutlinedTextField(
                     value = state.name,
                     onValueChange = onNameChange,
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    placeholder = { Text("Tu nombre") },
+                    placeholder = { Text(stringResource(R.string.account_name_placeholder)) },
                     trailingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
                     shape = RoundedCornerShape(12.dp)
                 )
             }
 
-            LabeledField(label = "Correo electrónico") {
+            LabeledField(label = stringResource(R.string.account_email)) {
                 OutlinedTextField(
                     value = state.email,
                     onValueChange = {},
                     modifier = Modifier.fillMaxWidth(),
                     readOnly = true,
                     singleLine = true,
-                    supportingText = { Text("No se puede cambiar desde la app") },
+                    supportingText = { Text(stringResource(R.string.account_email_read_only)) },
                     shape = RoundedCornerShape(12.dp)
                 )
             }
@@ -153,7 +160,7 @@ fun AccountScreen(
             }
             if (state.justSaved) {
                 Text(
-                    text = "Cambios guardados",
+                    text = stringResource(R.string.account_changes_saved),
                     color = MaterialTheme.colorScheme.secondary,
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -176,33 +183,104 @@ fun AccountScreen(
                 } else {
                     Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Guardar cambios")
+                    Text(stringResource(R.string.account_save_changes))
                 }
             }
 
+            // Sección de Ajustes de Apariencia e Idioma
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 4.dp),
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+
             Text(
-                text = "Permisos del dispositivo",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(top = 8.dp)
+                text = stringResource(R.string.settings_appearance_title),
+                style = MaterialTheme.typography.headlineSmall
+            )
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = stringResource(R.string.settings_theme_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = state.themeMode == ThemePreference.SYSTEM,
+                        onClick = { onThemeChange(ThemePreference.SYSTEM) },
+                        label = { Text(stringResource(R.string.settings_theme_system)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                    FilterChip(
+                        selected = state.themeMode == ThemePreference.LIGHT,
+                        onClick = { onThemeChange(ThemePreference.LIGHT) },
+                        label = { Text(stringResource(R.string.settings_theme_light)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                    FilterChip(
+                        selected = state.themeMode == ThemePreference.DARK,
+                        onClick = { onThemeChange(ThemePreference.DARK) },
+                        label = { Text(stringResource(R.string.settings_theme_dark)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = stringResource(R.string.settings_language_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = state.language == LanguagePreference.SPANISH,
+                        onClick = { onLanguageChange(LanguagePreference.SPANISH) },
+                        label = { Text(stringResource(R.string.settings_language_es)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                    FilterChip(
+                        selected = state.language == LanguagePreference.ENGLISH,
+                        onClick = { onLanguageChange(LanguagePreference.ENGLISH) },
+                        label = { Text(stringResource(R.string.settings_language_en)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 4.dp),
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+
+            Text(
+                text = stringResource(R.string.account_permissions_title),
+                style = MaterialTheme.typography.headlineSmall
             )
             Text(
-                text = "Se administran desde los ajustes de Android.",
+                text = stringResource(R.string.account_permissions_subtitle),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             PermissionCard(
                 icon = Icons.Outlined.LocationOn,
-                title = "Ubicación",
+                title = stringResource(R.string.account_permission_location),
                 granted = locationGranted,
-                description = "Para ubicarte en el mapa de orígenes.",
+                description = stringResource(R.string.account_permission_location_desc),
                 onOpenSettings = onOpenSettings
             )
             PermissionCard(
                 icon = Icons.Outlined.PhotoCamera,
-                title = "Cámara",
+                title = stringResource(R.string.account_permission_camera),
                 granted = cameraGranted,
-                description = "Para sacar fotos de tus recetas e intentos.",
+                description = stringResource(R.string.account_permission_camera_desc),
                 onOpenSettings = onOpenSettings
             )
 
@@ -220,10 +298,10 @@ fun AccountScreen(
             ) {
                 Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Cerrar sesión")
+                Text(stringResource(R.string.account_sign_out))
             }
             Text(
-                text = "Volvés a la pantalla de acceso.",
+                text = stringResource(R.string.account_sign_out_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -240,7 +318,7 @@ private fun Header(
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onBack) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
         }
         Column {
             Text(
@@ -249,7 +327,7 @@ private fun Header(
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = "Mi cuenta",
+                text = stringResource(R.string.account_title),
                 style = MaterialTheme.typography.headlineMedium
             )
         }
@@ -351,7 +429,6 @@ private fun Context.isLocationGranted(): Boolean =
     isGranted(Manifest.permission.ACCESS_FINE_LOCATION) ||
             isGranted(Manifest.permission.ACCESS_COARSE_LOCATION)
 
-/** Abre la pantalla de Android donde el usuario administra los permisos de esta app. */
 private fun Context.openAppSettings() {
     val intent = Intent(
         Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
@@ -374,6 +451,8 @@ private fun AccountScreenPreview() {
             cameraGranted = false,
             onBack = {},
             onNameChange = {},
+            onThemeChange = {},
+            onLanguageChange = {},
             onSave = {},
             onOpenSettings = {},
             onSignOut = {}

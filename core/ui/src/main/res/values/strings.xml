@@ -1,4 +1,5 @@
 <resources>
+    <!-- Errores de dominio -->
     <string name="core_ui_error_invalid_email">Ingresá un correo válido</string>
     <string name="core_ui_error_weak_password">La contraseña debe tener al menos 6 caracteres</string>
     <string name="core_ui_error_invalid_credentials">Correo o contraseña incorrectos</string>
@@ -8,4 +9,42 @@
     <string name="core_ui_error_unauthenticated">Tu sesión venció. Iniciá sesión de nuevo.</string>
     <string name="core_ui_error_invalid_recipe">Revisá los campos obligatorios de la receta.</string>
     <string name="core_ui_error_unknown">Algo salió mal. Intentá de nuevo.</string>
+
+    <!-- Cuenta y Ajustes -->
+    <string name="account_title">Tu perfil</string>
+    <string name="account_your_data">Tus datos</string>
+    <string name="account_name">Nombre</string>
+    <string name="account_name_placeholder">Tu nombre</string>
+    <string name="account_email">Correo electrónico</string>
+    <string name="account_email_read_only">No se puede cambiar desde la app</string>
+    <string name="account_save_changes">Guardar cambios</string>
+    <string name="account_changes_saved">Cambios guardados</string>
+    <string name="account_permissions_title">Permisos del dispositivo</string>
+    <string name="account_permissions_subtitle">Se administran desde los ajustes de Android.</string>
+    <string name="account_permission_location">Ubicación</string>
+    <string name="account_permission_location_desc">Para ubicarte en el mapa de orígenes.</string>
+    <string name="account_permission_camera">Cámara</string>
+    <string name="account_permission_camera_desc">Para sacar fotos de tus recetas e intentos.</string>
+    <string name="account_sign_out">Cerrar sesión</string>
+    <string name="account_sign_out_hint">Volvés a la pantalla de acceso.</string>
+
+    <!-- Preferencias de apariencia e idioma -->
+    <string name="settings_appearance_title">Apariencia y Lenguaje</string>
+    <string name="settings_theme_label">Tema visual</string>
+    <string name="settings_theme_system">Sistema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_language_label">Idioma de la aplicación</string>
+    <string name="settings_language_es">Español</string>
+    <string name="settings_language_en">Inglés</string>
+
+    <!-- Modo Offline -->
+    <string name="offline_banner_title">Modo sin conexión</string>
+    <string name="offline_banner_subtitle">Mostrando datos guardados localmente.</string>
+    <string name="offline_connected">Conexión restablecida</string>
+
+    <!-- Común -->
+    <string name="common_search">Buscar</string>
+    <string name="common_all">Todas</string>
+    <string name="common_back">Volver</string>
 </resources>
