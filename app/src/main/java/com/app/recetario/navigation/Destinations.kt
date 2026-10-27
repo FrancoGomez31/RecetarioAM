@@ -29,8 +29,18 @@ data class RecipeDetailDestination(val recipeId: String) : NavKey
 
 /** Formulario de receta: recipeId == null crea una receta nueva; con id, edita esa receta. */
 @Serializable
-data class RecipeFormDestination(val recipeId: String? = null) : NavKey
+data class RecipeFormDestination(
+    val recipeId: String? = null,
+    // Campos pre-llenados cuando viene del flujo de importar por link
+    val prefillName: String = "",
+    val prefillServings: String = "",
+    val prefillPrepTime: String = ""
+) : NavKey
 
 /** Registrar un intento de cocinar una receta: fotos por paso, comparación y nota. */
 @Serializable
 data class AttemptDestination(val recipeId: String) : NavKey
+
+/** Pantalla de importar una receta pegando un link + extracción con Gemini. */
+@Serializable
+data object LinkImportDestination : NavKey

@@ -38,6 +38,7 @@ import com.app.core.ui.RecetarioTheme
 /**
  * Sheet que sale desde abajo al tocar "+" en Home.
  * No navega por sí mismo: avisa qué opción eligió el usuario y quien lo usa decide qué hacer.
+ * linkEnabled ahora es true por defecto: la feature de importar por link está disponible.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,9 +46,8 @@ fun CreateRecipeSheet(
     onDismiss: () -> Unit,
     onManualClick: () -> Unit,
     onLinkClick: () -> Unit,
-    linkEnabled: Boolean = false
+    linkEnabled: Boolean = true   // ← habilitado
 ) {
-    // skipPartiallyExpanded: el contenido es corto, así que se abre completo y no a media altura.
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
@@ -100,7 +100,7 @@ private fun CreateRecipeSheetContent(
         CreateOptionCard(
             icon = Icons.Outlined.Link,
             title = "Por link · IA",
-            description = "Extraé la receta del texto de un enlace.",
+            description = "Pegá el link de un video o receta y la IA extrae los ingredientes y pasos.",
             enabled = linkEnabled,
             onClick = onLinkClick
         )
@@ -128,7 +128,6 @@ private fun CreateOptionCard(
     OutlinedCard(
         onClick = onClick,
         enabled = enabled,
-        // Si está deshabilitada la atenuamos para que se note, pero sigue legible.
         modifier = Modifier
             .fillMaxWidth()
             .alpha(if (enabled) 1f else 0.55f),
@@ -197,7 +196,7 @@ private fun CreateRecipeSheetContentPreview() {
         CreateRecipeSheetContent(
             onManualClick = {},
             onLinkClick = {},
-            linkEnabled = false
+            linkEnabled = true
         )
     }
 }

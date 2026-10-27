@@ -41,8 +41,24 @@ class RecipeFormViewModel @Inject constructor(
     /** Receta que se está editando: de ahí salen los datos que el formulario no muestra (foto, intentos). */
     private var original: Recipe? = null
 
-    /** La pantalla llama a start() cada vez que se compone; solo la primera vez hace algo. */
+    /** La pantalla llama a start()/prefill() una sola vez. */
     private var started = false
+
+    /**
+     * Pre-llena el formulario con datos extraídos por IA (flujo "Por link").
+     * Solo actúa si todavía no se inicializó.
+     */
+    fun prefill(name: String, servings: String, prepTime: String) {
+        if (started) return
+        started = true
+        _uiState.update { state ->
+            state.copy(
+                name = name,
+                servings = servings.ifBlank { "4" },
+                prepTime = prepTime
+            )
+        }
+    }
 
     fun start(recipeId: String?) {
         if (started) return

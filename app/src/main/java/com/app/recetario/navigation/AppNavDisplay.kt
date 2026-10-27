@@ -17,6 +17,8 @@ import com.app.features.map.MapRoute
 import com.app.features.map.MapViewModel
 import com.app.features.recipes.AttemptRoute
 import com.app.features.recipes.AttemptViewModel
+import com.app.features.recipes.LinkImportRoute
+import com.app.features.recipes.LinkImportViewModel
 import com.app.features.recipes.PlacePickerViewModel
 import com.app.features.recipes.RecipeDetailRoute
 import com.app.features.recipes.RecipeDetailViewModel
@@ -35,28 +37,36 @@ fun AppNavDisplay(
     navigationState: NavigationState,
     modifier: Modifier = Modifier
 ) {
-    // entryProvider: "para esta key, mostrá esta pantalla".
     val entryProvider = entryProvider<NavKey> {
 
         entry<RecipesDestination> {
-            // hiltViewModel() pide el ViewModel al grafo: Hilt resuelve toda la cadena
-            // (casos de uso -> repositorio) sin que acá nombremos nada de eso.
-            // Se crea UNA vez por entrada del back stack y sobrevive a rotaciones.
             val viewModel: RecipesViewModel = hiltViewModel()
-
-            // Cada vez que Home vuelve a mostrarse (por ejemplo al guardar una receta y volver
-            // atrás) recarga la lista. Provisorio: con Firestore el repositorio avisará los
-            // cambios solo y este efecto ya no hará falta.
             LaunchedEffect(Unit) { viewModel.loadRecipes() }
-
             RecipesRoute(
                 viewModel = viewModel,
                 onCreateManual = { navigationState.navigate(RecipeFormDestination()) },
-                onCreateFromLink = { /* pendiente: carga por link con IA */ },
+                onCreateFromLink = { navigationState.navigate(LinkImportDestination) },
                 onRecipeClick = { id -> navigationState.navigate(RecipeDetailDestination(id)) },
-                onNotificationsClick = { /* pendiente: notificaciones */ },
-                // navigate() agrega la pantalla encima del back stack de la pestaña actual
+                onNotificationsClick = { /* las notificaciones se configuran desde el detalle */ },
                 onAccountClick = { navigationState.navigate(AccountDestination) }
+            )
+        }
+
+        entry<LinkImportDestination> {
+            val viewModel: LinkImportViewModel = hiltViewModel()
+            LinkImportRoute(
+                viewModel = viewModel,
+                onBack = { navigationState.goBackFrom(LinkImportDestination) },
+                onConfirm = { formState ->
+                    // Navegamos al formulario pasando los datos pre-llenados como parámetros
+                    navigationState.navigate(
+                        RecipeFormDestination(
+                            prefillName = formState.name,
+                            prefillServings = formState.servings,
+                            prefillPrepTime = formState.prepTime
+                        )
+                    )
+                }
             )
         }
 
@@ -64,7 +74,6 @@ fun AppNavDisplay(
             val viewModel: MapViewModel = hiltViewModel()
             MapRoute(
                 viewModel = viewModel,
-                // El detalle se abre encima de la pestaña Mapa: al volver, el atlas sigue donde estaba.
                 onRecipeClick = { id -> navigationState.navigate(RecipeDetailDestination(id)) }
             )
         }
@@ -75,32 +84,41 @@ fun AppNavDisplay(
             val viewModel: AccountViewModel = hiltViewModel()
             AccountRoute(
                 viewModel = viewModel,
-                // goBackFrom: si el usuario toca la flecha dos veces rápido, el segundo toque no hace nada
                 onBack = { navigationState.goBackFrom(AccountDestination) }
             )
         }
 
         entry<RecipeDetailDestination> { key ->
             val viewModel: RecipeDetailViewModel = hiltViewModel()
-
-            // Igual que en Home: al volver de editar o de registrar un intento, se recarga.
             LaunchedEffect(key.recipeId) { viewModel.load(key.recipeId) }
-
             RecipeDetailRoute(
                 viewModel = viewModel,
                 onBack = { navigationState.goBackFrom(key) },
                 onEdit = { id -> navigationState.navigate(RecipeFormDestination(id)) },
                 onRegisterAttempt = { id -> navigationState.navigate(AttemptDestination(id)) },
-                // Al eliminar, el detalle ya no tiene receta que mostrar: se vuelve a Home.
                 onDeleted = { navigationState.goBackFrom(key) }
             )
         }
 
-        // `key` es la RecipeFormDestination con la que se navegó: de ahí sale el id (o null).
         entry<RecipeFormDestination> { key ->
             val viewModel: RecipeFormViewModel = hiltViewModel()
-            // El selector de origen es parte del formulario: comparte su entrada del back stack.
             val placePickerViewModel: PlacePickerViewModel = hiltViewModel()
+
+            // Si viene del flujo de link import, pre-llenamos el formulario
+            LaunchedEffect(key) {
+                if (key.recipeId != null) {
+                    viewModel.start(key.recipeId)
+                } else if (key.prefillName.isNotBlank()) {
+                    viewModel.prefill(
+                        name = key.prefillName,
+                        servings = key.prefillServings,
+                        prepTime = key.prefillPrepTime
+                    )
+                } else {
+                    viewModel.start(null)
+                }
+            }
+
             RecipeFormRoute(
                 viewModel = viewModel,
                 placePickerViewModel = placePickerViewModel,
@@ -129,9 +147,6 @@ fun AppNavDisplay(
 
 /**
  * Convierte cada back stack en entradas "decoradas" y junta las de las pestañas visibles.
- *
- * Decoramos TODOS los back stacks, aunque no se vean: así, al cambiar de pestaña,
- * las pantallas de la otra conservan su ViewModel y su estado (scroll, filtros, formularios…).
  */
 @Composable
 private fun NavigationState.toEntries(
@@ -141,9 +156,7 @@ private fun NavigationState.toEntries(
         rememberDecoratedNavEntries(
             backStack = backStack,
             entryDecorators = listOf(
-                // Guarda el estado de rememberSaveable de cada pantalla
                 rememberSaveableStateHolderNavEntryDecorator(),
-                // Le da a cada pantalla su propio ViewModelStore
                 rememberViewModelStoreNavEntryDecorator()
             ),
             entryProvider = entryProvider
