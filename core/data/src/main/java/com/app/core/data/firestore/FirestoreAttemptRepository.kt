@@ -1,5 +1,6 @@
 package com.app.core.data.firestore
 
+import android.util.Log
 import com.app.core.domain.AppResult
 import com.app.core.domain.Attempt
 import com.app.core.domain.AttemptPhoto
@@ -8,6 +9,7 @@ import com.app.core.domain.DomainError
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +36,8 @@ class FirestoreAttemptRepository @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            AppResult.Error(DomainError.Network)
+            Log.e("FirestoreAttemptRepo", "Error al obtener intentos de Firestore", e)
+            AppResult.Error(mapFirestoreError(e))
         }
     }
 
@@ -49,8 +52,23 @@ class FirestoreAttemptRepository @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            AppResult.Error(DomainError.Network)
+            Log.e("FirestoreAttemptRepo", "Error al guardar intento", e)
+            AppResult.Error(mapFirestoreError(e))
         }
+    }
+}
+
+private fun mapFirestoreError(e: Exception): DomainError {
+    return if (e is FirebaseFirestoreException) {
+        when (e.code) {
+            FirebaseFirestoreException.Code.UNAVAILABLE -> DomainError.Network
+            FirebaseFirestoreException.Code.PERMISSION_DENIED -> DomainError.Unknown("Permiso denegado en Firestore: revisá las Security Rules en Firebase Console")
+            FirebaseFirestoreException.Code.UNAUTHENTICATED -> DomainError.Unauthenticated
+            FirebaseFirestoreException.Code.NOT_FOUND -> DomainError.NotFound
+            else -> DomainError.Unknown("Error Firestore (${e.code}): ${e.message}")
+        }
+    } else {
+        DomainError.Unknown(e.localizedMessage ?: "Error inesperado de base de datos")
     }
 }
 

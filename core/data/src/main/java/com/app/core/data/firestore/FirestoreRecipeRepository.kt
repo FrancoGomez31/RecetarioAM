@@ -1,5 +1,6 @@
 package com.app.core.data.firestore
 
+import android.util.Log
 import com.app.core.domain.AppResult
 import com.app.core.domain.DomainError
 import com.app.core.domain.Ingredient
@@ -9,6 +10,7 @@ import com.app.core.domain.Visibility
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +33,8 @@ class FirestoreRecipeRepository @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            AppResult.Error(DomainError.Network)
+            Log.e("FirestoreRecipeRepo", "Error al obtener recetas de Firestore", e)
+            AppResult.Error(mapFirestoreError(e))
         }
     }
 
@@ -44,7 +47,8 @@ class FirestoreRecipeRepository @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            AppResult.Error(DomainError.Network)
+            Log.e("FirestoreRecipeRepo", "Error al obtener receta $id", e)
+            AppResult.Error(mapFirestoreError(e))
         }
     }
 
@@ -59,7 +63,8 @@ class FirestoreRecipeRepository @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            AppResult.Error(DomainError.Network)
+            Log.e("FirestoreRecipeRepo", "Error al guardar receta", e)
+            AppResult.Error(mapFirestoreError(e))
         }
     }
 
@@ -71,8 +76,23 @@ class FirestoreRecipeRepository @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            AppResult.Error(DomainError.Network)
+            Log.e("FirestoreRecipeRepo", "Error al eliminar receta $id", e)
+            AppResult.Error(mapFirestoreError(e))
         }
+    }
+}
+
+private fun mapFirestoreError(e: Exception): DomainError {
+    return if (e is FirebaseFirestoreException) {
+        when (e.code) {
+            FirebaseFirestoreException.Code.UNAVAILABLE -> DomainError.Network
+            FirebaseFirestoreException.Code.PERMISSION_DENIED -> DomainError.Unknown("Permiso denegado en Firestore: revisá las Security Rules en Firebase Console")
+            FirebaseFirestoreException.Code.UNAUTHENTICATED -> DomainError.Unauthenticated
+            FirebaseFirestoreException.Code.NOT_FOUND -> DomainError.NotFound
+            else -> DomainError.Unknown("Error Firestore (${e.code}): ${e.message}")
+        }
+    } else {
+        DomainError.Unknown(e.localizedMessage ?: "Error inesperado de base de datos")
     }
 }
 

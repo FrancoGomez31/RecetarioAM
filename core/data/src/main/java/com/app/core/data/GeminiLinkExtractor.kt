@@ -1,11 +1,14 @@
 package com.app.core.data
 
+import android.util.Log
 import com.app.core.domain.AppResult
 import com.app.core.domain.DomainError
 import com.app.core.domain.Ingredient
 import com.app.core.domain.Recipe
 import com.app.core.domain.RecipeLinkExtractor
 import com.app.core.domain.Visibility
+import java.io.IOException
+import java.net.UnknownHostException
 import javax.inject.Inject
 import javax.inject.Named
 import kotlin.coroutines.cancellation.CancellationException
@@ -41,7 +44,14 @@ class GeminiLinkExtractor @Inject constructor(
             AppResult.Success(recipe)
         } catch (e: CancellationException) {
             throw e
+        } catch (e: UnknownHostException) {
+            Log.e("GeminiLinkExtractor", "Error de host / sin internet al extraer link", e)
+            AppResult.Error(DomainError.Network)
+        } catch (e: IOException) {
+            Log.e("GeminiLinkExtractor", "Error de E/S de red al extraer link", e)
+            AppResult.Error(DomainError.Network)
         } catch (e: Exception) {
+            Log.e("GeminiLinkExtractor", "Error inesperado al extraer link", e)
             AppResult.Error(DomainError.Unknown(e.message))
         }
     }
