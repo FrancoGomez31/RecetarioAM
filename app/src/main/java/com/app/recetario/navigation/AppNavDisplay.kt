@@ -26,6 +26,8 @@ import com.app.features.recipes.RecipeFormRoute
 import com.app.features.recipes.RecipeFormViewModel
 import com.app.features.recipes.RecipesRoute
 import com.app.features.recipes.RecipesViewModel
+import com.app.features.recipes.explore.ExploreRoute
+import com.app.features.recipes.explore.ExploreViewModel
 import com.app.recetario.ui.ComingSoonScreen
 
 /**
@@ -58,7 +60,6 @@ fun AppNavDisplay(
                 viewModel = viewModel,
                 onBack = { navigationState.goBackFrom(LinkImportDestination) },
                 onConfirm = { formState ->
-                    // Navegamos al formulario pasando los datos pre-llenados como parámetros
                     navigationState.navigate(
                         RecipeFormDestination(
                             prefillName = formState.name,
@@ -77,8 +78,15 @@ fun AppNavDisplay(
                 onRecipeClick = { id -> navigationState.navigate(RecipeDetailDestination(id)) }
             )
         }
-        entry<ExploreDestination> { ComingSoonScreen(title = "Explorar") }
-        entry<AchievementsDestination> { ComingSoonScreen(title = "Logros") }
+
+        entry<ExploreDestination> {
+            val viewModel: ExploreViewModel = hiltViewModel()
+            LaunchedEffect(Unit) { viewModel.loadExploreRecipes() }
+            ExploreRoute(
+                viewModel = viewModel,
+                onRecipeClick = { id -> navigationState.navigate(RecipeDetailDestination(id)) }
+            )
+        }
 
         entry<AccountDestination> {
             val viewModel: AccountViewModel = hiltViewModel()
@@ -104,7 +112,6 @@ fun AppNavDisplay(
             val viewModel: RecipeFormViewModel = hiltViewModel()
             val placePickerViewModel: PlacePickerViewModel = hiltViewModel()
 
-            // Si viene del flujo de link import, pre-llenamos el formulario
             LaunchedEffect(key) {
                 if (key.recipeId != null) {
                     viewModel.start(key.recipeId)

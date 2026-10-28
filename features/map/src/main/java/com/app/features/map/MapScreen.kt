@@ -52,11 +52,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
 import coil3.compose.AsyncImage
 import com.app.core.domain.RecipeOrigin
 import com.app.core.domain.UserLocation
 import com.app.core.domain.distanceKm
 import com.app.core.ui.LeafGreen
+import com.app.core.ui.R
 import com.app.core.ui.RecetarioTheme
 import com.app.core.ui.asMessage
 import com.app.core.ui.formatDistance
@@ -167,7 +169,7 @@ fun MapScreen(
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyMedium
                     )
-                    OutlinedButton(onClick = actions.onRetry) { Text("Reintentar") }
+                    OutlinedButton(onClick = actions.onRetry) { Text(stringResource(R.string.map_loc_retry)) }
                 }
 
                 state.origins.isEmpty() -> EmptyAtlas()
@@ -192,15 +194,15 @@ fun MapScreen(
 private fun AtlasHeader(state: MapUiState) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         if (state.origins.isNotEmpty()) {
-            val countries = if (state.countryCount == 1) "1 PAÍS" else "${state.countryCount} PAÍSES"
-            val origins = if (state.originCount == 1) "1 ORIGEN" else "${state.originCount} ORÍGENES"
+            val countries = if (state.countryCount == 1) stringResource(R.string.map_country_count_one) else stringResource(R.string.map_country_count_many, state.countryCount)
+            val origins = if (state.originCount == 1) stringResource(R.string.map_origin_count_one) else stringResource(R.string.map_origin_count_many, state.originCount)
             Text(
                 text = "$countries / $origins",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary
             )
         }
-        Text(text = "Mi atlas de sabores", style = MaterialTheme.typography.headlineMedium)
+        Text(text = stringResource(R.string.map_title), style = MaterialTheme.typography.headlineMedium)
     }
 }
 
@@ -219,26 +221,26 @@ private fun LocationCard(
     val actionLabel: String?
     when {
         state.locationStatus == LocationStatus.PERMISSION_NEEDED && user == null -> {
-            title = "Activá tu ubicación"
-            subtitle = "Así calculamos desde dónde cocinás. Podés activarla también desde los ajustes del teléfono."
-            actionLabel = "Permitir"
+            title = stringResource(R.string.map_loc_enable_title)
+            subtitle = stringResource(R.string.map_loc_enable_desc)
+            actionLabel = stringResource(R.string.map_loc_allow)
         }
 
         state.locationStatus == LocationStatus.FAILED && user == null -> {
-            title = "No pudimos ubicarte"
-            subtitle = state.locationError?.asMessageText() ?: "Probá de nuevo en un momento."
-            actionLabel = "Reintentar"
+            title = stringResource(R.string.map_loc_failed_title)
+            subtitle = state.locationError?.asMessageText() ?: ""
+            actionLabel = stringResource(R.string.map_loc_retry)
         }
 
         user != null -> {
-            title = user.label.ifBlank { "Tu ubicación" }
-            subtitle = if (loading) "Actualizando tu ubicación…" else "Ubicación actual · Permiso concedido"
-            actionLabel = if (loading) null else "Actualizar"
+            title = user.label.ifBlank { stringResource(R.string.map_legend_user) }
+            subtitle = if (loading) stringResource(R.string.map_loc_updating) else stringResource(R.string.account_permission_location)
+            actionLabel = if (loading) null else "OK"
         }
 
         else -> {
-            title = "Buscando tu ubicación…"
-            subtitle = "Esto puede tardar unos segundos."
+            title = stringResource(R.string.map_loc_searching)
+            subtitle = ""
             actionLabel = null
         }
     }
@@ -300,7 +302,7 @@ private fun AtlasContent(
             FilterChip(
                 selected = state.selectedCountry == null,
                 onClick = { actions.onCountrySelected(null) },
-                label = { Text("Todos") }
+                label = { Text(stringResource(R.string.map_all)) }
             )
             state.countries.forEach { chip ->
                 FilterChip(
@@ -337,7 +339,7 @@ private fun AtlasContent(
 
         if (state.otherOrigins.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(text = "Otras cocinas exploradas", style = MaterialTheme.typography.headlineSmall)
+                Text(text = stringResource(R.string.map_other_origins), style = MaterialTheme.typography.headlineSmall)
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -368,8 +370,8 @@ private fun Legend() {
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        LegendItem(color = MaterialTheme.colorScheme.primary, text = "Origen de una receta")
-        LegendItem(color = LeafGreen, text = "Tu ubicación")
+        LegendItem(color = MaterialTheme.colorScheme.primary, text = stringResource(R.string.map_legend_origin))
+        LegendItem(color = LeafGreen, text = stringResource(R.string.map_legend_user))
     }
 }
 
@@ -409,7 +411,7 @@ private fun SelectedOriginCard(
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(text = origin.label, style = MaterialTheme.typography.headlineSmall)
                     Text(
-                        text = "${recipesText(origin.recipes.size)} en tu colección",
+                        text = stringResource(R.string.map_collection_count, recipesText(origin.recipes.size)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -443,7 +445,7 @@ private fun SelectedOriginCard(
                         if (featured.photoUrl != null) {
                             AsyncImage(
                                 model = featured.photoUrl,
-                                contentDescription = "Portada de ${featured.name}",
+                                contentDescription = null,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize()
                             )
@@ -461,7 +463,7 @@ private fun SelectedOriginCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Ver receta →",
+                            text = stringResource(R.string.map_view_recipe),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -471,7 +473,7 @@ private fun SelectedOriginCard(
 
             if (others.isNotEmpty()) {
                 Text(
-                    text = "También: ${joinNames(others.map { it.name })}",
+                    text = "${stringResource(R.string.explore_card_servings).let { "También: " }}${joinNames(others.map { it.name })}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -481,7 +483,7 @@ private fun SelectedOriginCard(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Desde tu ubicación actual",
+                        text = stringResource(R.string.map_from_user_loc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f)
@@ -553,9 +555,9 @@ private fun EmptyAtlas() {
             modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text(text = "Tu atlas está vacío", style = MaterialTheme.typography.titleMedium)
+            Text(text = stringResource(R.string.map_empty_title), style = MaterialTheme.typography.titleMedium)
             Text(
-                text = "Cuando guardes una receta y elijas su origen en el mapa, va a aparecer acá con su pin.",
+                text = stringResource(R.string.map_empty_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -581,12 +583,12 @@ private fun InfoCard() {
             )
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    text = "Un mapa para descubrir, no para navegar",
+                    text = stringResource(R.string.map_info_title),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "Cada pin es el origen de una receta guardada. Las distancias son geográficas, en línea recta: no son rutas ni viajes reales.",
+                    text = stringResource(R.string.map_info_desc),
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -601,10 +603,11 @@ private fun distanceTo(user: UserLocation, origin: RecipeOrigin): Double =
 
 private fun recipesText(count: Int): String = if (count == 1) "1 receta" else "$count recetas"
 
+@Composable
 private fun attemptsText(attempts: Int): String = when (attempts) {
-    0 -> "Sin cocinar"
-    1 -> "1 intento"
-    else -> "$attempts intentos"
+    0 -> stringResource(R.string.detail_attempts_zero)
+    1 -> stringResource(R.string.detail_attempts_one)
+    else -> stringResource(R.string.detail_attempts_many, attempts)
 }
 
 /** ["A"] → "A"; ["A", "B"] → "A y B"; ["A", "B", "C"] → "A, B y C". */

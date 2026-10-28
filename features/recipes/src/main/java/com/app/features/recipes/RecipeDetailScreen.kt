@@ -61,6 +61,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import androidx.compose.ui.res.stringResource
 import com.app.core.domain.Attempt
 import com.app.core.domain.Ingredient
 import com.app.core.domain.Recipe
@@ -68,6 +69,7 @@ import com.app.core.domain.UserLocation
 import com.app.core.domain.Visibility
 import com.app.core.domain.distanceKm
 import com.app.core.domain.originLabel
+import com.app.core.ui.R
 import com.app.core.ui.RecetarioTheme
 import com.app.core.ui.asMessage
 import com.app.core.ui.formatDistance
@@ -121,9 +123,9 @@ fun RecipeDetailRoute(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("¿Eliminar receta?") },
+            title = { Text(stringResource(R.string.detail_delete_dialog_title)) },
             text = {
-                Text("Vas a eliminar “${state.recipe?.name.orEmpty()}”. Esta acción no se puede deshacer.")
+                Text(stringResource(R.string.detail_delete_dialog_msg, state.recipe?.name.orEmpty()))
             },
             confirmButton = {
                 TextButton(
@@ -132,12 +134,12 @@ fun RecipeDetailRoute(
                         viewModel.onDelete()
                     }
                 ) {
-                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.detail_delete_confirm), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.detail_delete_cancel))
                 }
             }
         )
@@ -169,12 +171,12 @@ fun RecipeDetailScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = state.error?.asMessage() ?: "No pudimos cargar la receta.",
+                    text = state.error?.asMessage() ?: stringResource(R.string.detail_load_error),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium
                 )
                 OutlinedButton(onClick = actions.onBack) {
-                    Text("Volver")
+                    Text(stringResource(R.string.common_back))
                 }
             }
         }
@@ -235,10 +237,10 @@ private fun RecipeDetailContent(
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Pill(
-                    text = if (recipe.visibility == Visibility.PUBLIC) "Pública" else "Privada",
+                    text = if (recipe.visibility == Visibility.PUBLIC) stringResource(R.string.detail_visibility_public) else stringResource(R.string.detail_visibility_private),
                     container = MaterialTheme.colorScheme.secondaryContainer
                 )
-                Pill(text = "Receta propia", container = MaterialTheme.colorScheme.primaryContainer)
+                Pill(text = stringResource(R.string.detail_own_recipe), container = MaterialTheme.colorScheme.primaryContainer)
             }
             Text(text = recipe.name, style = MaterialTheme.typography.headlineMedium)
             if (recipe.description.isNotBlank()) {
@@ -270,7 +272,7 @@ private fun DetailTopBar(
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = actions.onBack) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
         }
         Text(
             text = listOf(recipe.country, recipe.city)
@@ -282,10 +284,10 @@ private fun DetailTopBar(
             modifier = Modifier.weight(1f)
         )
         IconButton(onClick = actions.onEdit, enabled = enabled) {
-            Icon(Icons.Outlined.Edit, contentDescription = "Editar receta")
+            Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.detail_edit_content_desc))
         }
         IconButton(onClick = actions.onDeleteClick, enabled = enabled) {
-            Icon(Icons.Outlined.Delete, contentDescription = "Eliminar receta")
+            Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.detail_delete_content_desc))
         }
     }
 }
@@ -293,7 +295,7 @@ private fun DetailTopBar(
 @Composable
 private fun IngredientsBlock(recipe: Recipe) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        SectionHeader(title = "Ingredientes", trailing = servingsText(recipe.servings))
+        SectionHeader(title = stringResource(R.string.detail_ingredients_title), trailing = servingsText(recipe.servings))
 
         Surface(
             modifier = Modifier.fillMaxWidth(),
@@ -334,8 +336,8 @@ private fun IngredientsBlock(recipe: Recipe) {
 private fun StepsBlock(recipe: Recipe) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         SectionHeader(
-            title = "Paso a paso",
-            trailing = if (recipe.steps.size == 1) "1 paso" else "${recipe.steps.size} pasos"
+            title = stringResource(R.string.detail_steps_title),
+            trailing = if (recipe.steps.size == 1) stringResource(R.string.detail_steps_count_one) else stringResource(R.string.detail_steps_count_many, recipe.steps.size)
         )
 
         recipe.steps.forEachIndexed { index, step ->
@@ -373,7 +375,7 @@ private fun OriginBlock(
     val longitude = recipe.longitude
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(text = "El origen de este sabor", style = MaterialTheme.typography.headlineSmall)
+        Text(text = stringResource(R.string.detail_origin_title), style = MaterialTheme.typography.headlineSmall)
 
         // Las recetas sin coordenadas (por ejemplo, las de prueba) muestran solo el texto.
         if (latitude != null && longitude != null) {
@@ -406,11 +408,11 @@ private fun OriginBlock(
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "Origen a nivel de ${originLevelLabel(recipe)} desde ${user.city.ifBlank { "tu ubicación" }}",
+                        text = stringResource(R.string.detail_origin_level_from, originLevelLabel(recipe), user.city.ifBlank { stringResource(R.string.map_legend_user) }),
                         style = MaterialTheme.typography.bodySmall
                     )
                     Text(
-                        text = "Distancia geográfica en línea recta; no indica una ruta ni un desplazamiento real.",
+                        text = stringResource(R.string.detail_origin_distance_disclaimer),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -421,14 +423,14 @@ private fun OriginBlock(
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "Origen a nivel de ${originLevelLabel(recipe)}",
+                        text = stringResource(R.string.detail_origin_level_no_user, originLevelLabel(recipe)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     // Sin ubicación no hay distancia: se avisa cómo conseguirla en vez de inventar una.
                     if (latitude != null && longitude != null) {
                         Text(
-                            text = "Activá tu ubicación desde la pestaña Mapa para ver la distancia desde donde cocinás.",
+                            text = stringResource(R.string.detail_origin_enable_loc_hint),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -471,15 +473,15 @@ private fun ReminderBlock(
                 )
                 Column {
                     Text(
-                        text = "Recordatorio para cocinar",
+                        text = stringResource(R.string.detail_reminder_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
                         text = if (isReminderSet) {
-                            "Aviso programado para cocinar esta receta"
+                            stringResource(R.string.detail_reminder_scheduled)
                         } else {
-                            "Sin programar (avisarme en 10 segundos para probar)"
+                            stringResource(R.string.detail_reminder_not_scheduled)
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -509,7 +511,7 @@ private fun ProgressBlock(
     onRegisterAttempt: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(text = "Mi progreso", style = MaterialTheme.typography.headlineSmall)
+        Text(text = stringResource(R.string.detail_progress_title), style = MaterialTheme.typography.headlineSmall)
 
         Surface(
             modifier = Modifier.fillMaxWidth(),
@@ -523,9 +525,9 @@ private fun ProgressBlock(
             ) {
                 Text(
                     text = when (recipe.attempts) {
-                        0 -> "Todavía no cocinaste esta receta."
-                        1 -> "Cocinaste esta receta 1 vez."
-                        else -> "Cocinaste esta receta ${recipe.attempts} veces."
+                        0 -> stringResource(R.string.detail_attempts_zero)
+                        1 -> stringResource(R.string.detail_attempts_one)
+                        else -> stringResource(R.string.detail_attempts_many, recipe.attempts)
                     },
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -539,7 +541,7 @@ private fun ProgressBlock(
                         .height(48.dp),
                     shape = RoundedCornerShape(50)
                 ) {
-                    Text("Registrar intento")
+                    Text(stringResource(R.string.detail_btn_register_attempt))
                 }
             }
         }
@@ -564,7 +566,7 @@ private fun AttemptRow(attempt: Attempt) {
             if (cover != null) {
                 AsyncImage(
                     model = cover.uri,
-                    contentDescription = "Foto del intento ${attempt.number}",
+                    contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -573,15 +575,15 @@ private fun AttemptRow(attempt: Attempt) {
 
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
-                text = "Intento ${attempt.number} · ${formatDay(attempt.createdAtMillis)}",
+                text = stringResource(R.string.detail_attempt_number, attempt.number, formatDay(attempt.createdAtMillis)),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold
             )
             Text(
                 text = when (attempt.photos.size) {
-                    0 -> "Sin fotos"
-                    1 -> "1 foto"
-                    else -> "${attempt.photos.size} fotos"
+                    0 -> stringResource(R.string.detail_no_photos)
+                    1 -> stringResource(R.string.detail_one_photo)
+                    else -> stringResource(R.string.detail_many_photos, attempt.photos.size)
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -718,13 +720,15 @@ private fun OriginMap(
 
 // ------------------------------------------------------------------- Textos
 
+@Composable
 private fun servingsText(servings: Int): String =
-    if (servings == 1) "1 porción" else "$servings porciones"
+    if (servings == 1) stringResource(R.string.detail_servings_one) else stringResource(R.string.detail_servings_many, servings)
 
+@Composable
 private fun originLevelLabel(recipe: Recipe): String = when {
-    recipe.restaurant.isNotBlank() -> "restaurante"
-    recipe.city.isNotBlank() -> "ciudad"
-    else -> "país"
+    recipe.restaurant.isNotBlank() -> stringResource(R.string.detail_origin_level_rest)
+    recipe.city.isNotBlank() -> stringResource(R.string.detail_origin_level_city)
+    else -> stringResource(R.string.detail_origin_level_country)
 }
 
 /** Cuánto se acerca el mapa según el nivel del origen. */

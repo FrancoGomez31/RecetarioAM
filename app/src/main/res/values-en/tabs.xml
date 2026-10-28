@@ -1,0 +1,5 @@
+<resources>
+    <string name="tab_recipes">My recipes</string>
+    <string name="tab_map">Atlas</string>
+    <string name="tab_explore">Explore</string>
+</resources>

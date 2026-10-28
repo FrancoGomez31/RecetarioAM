@@ -17,7 +17,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -30,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -38,8 +38,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.core.ui.R
 import com.app.core.ui.RecetarioTheme
 import com.app.core.ui.asMessage
+import androidx.compose.foundation.Image
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 
 @Composable
 fun AuthRoute(
@@ -83,34 +88,36 @@ fun AuthScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "TU CUADERNO CULINARIO",
+                text = stringResource(R.string.auth_subtitle),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = "Recetario con Origen",
+                text = stringResource(R.string.auth_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Medium
             )
 
-            // Placeholder de la foto (se reemplaza cuando carguemos imágenes)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(180.dp)
-                    .background(
-                        MaterialTheme.colorScheme.primaryContainer,
-                        RoundedCornerShape(20.dp)
-                    ),
+                    .clip(RoundedCornerShape(20.dp)),
                 contentAlignment = Alignment.BottomStart
             ) {
+                Image(
+                    painter = painterResource(com.app.features.auth.R.drawable.auth_hero),
+                    contentDescription = null,
+                    modifier = Modifier.matchParentSize(),
+                    contentScale = ContentScale.Crop
+                )
                 Surface(
                     modifier = Modifier.padding(12.dp),
                     shape = RoundedCornerShape(50),
                     color = MaterialTheme.colorScheme.surface
                 ) {
                     Text(
-                        text = "Cada receta, un lugar.",
+                        text = stringResource(R.string.auth_card_badge),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         style = MaterialTheme.typography.labelMedium
                     )
@@ -118,16 +125,15 @@ fun AuthScreen(
             }
 
             Text(
-                text = "El mundo empieza en tu cocina.",
+                text = stringResource(R.string.auth_hero_title),
                 style = MaterialTheme.typography.headlineMedium
             )
             Text(
-                text = "Guardá sabores, descubrí su origen y hacé de cada intento una nueva historia.",
+                text = stringResource(R.string.auth_hero_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            // Selector Iniciar sesión / Crear cuenta
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -138,13 +144,13 @@ fun AuthScreen(
                     .padding(4.dp)
             ) {
                 ModeTab(
-                    text = "Iniciar sesión",
+                    text = stringResource(R.string.auth_tab_login),
                     selected = isLogin,
                     onClick = { onModeChange(AuthMode.LOGIN) },
                     modifier = Modifier.weight(1f)
                 )
                 ModeTab(
-                    text = "Crear cuenta",
+                    text = stringResource(R.string.auth_tab_register),
                     selected = !isLogin,
                     onClick = { onModeChange(AuthMode.REGISTER) },
                     modifier = Modifier.weight(1f)
@@ -155,7 +161,7 @@ fun AuthScreen(
                 value = state.email,
                 onValueChange = onEmailChange,
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Correo electrónico") },
+                label = { Text(stringResource(R.string.auth_label_email)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
@@ -164,7 +170,7 @@ fun AuthScreen(
                 value = state.password,
                 onValueChange = onPasswordChange,
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Contraseña") },
+                label = { Text(stringResource(R.string.auth_label_password)) },
                 singleLine = true,
                 visualTransformation = if (passwordVisible) {
                     VisualTransformation.None
@@ -174,19 +180,10 @@ fun AuthScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
                     TextButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Text(if (passwordVisible) "Ocultar" else "Mostrar")
+                        Text(if (passwordVisible) stringResource(R.string.auth_hide_password) else stringResource(R.string.auth_show_password))
                     }
                 }
             )
-
-            if (isLogin) {
-                TextButton(
-                    onClick = { /* pendiente: recuperar contraseña */ },
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text("¿Olvidaste tu contraseña?")
-                }
-            }
 
             state.error?.let { error ->
                 Text(
@@ -210,30 +207,13 @@ fun AuthScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text(if (isLogin) "Entrar a mi recetario" else "Crear mi cuenta")
+                    Text(if (isLogin) stringResource(R.string.auth_btn_login) else stringResource(R.string.auth_btn_register))
                 }
-            }
-
-            Text(
-                text = "o continuá con",
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            OutlinedButton(
-                onClick = { /* pendiente: Google */ },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-            ) {
-                Text("Continuar con Google")
             }
 
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Al continuar aceptás los Términos y la Política de privacidad. Tus recetas son privadas por defecto.",
+                text = stringResource(R.string.auth_terms_notice),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodySmall,

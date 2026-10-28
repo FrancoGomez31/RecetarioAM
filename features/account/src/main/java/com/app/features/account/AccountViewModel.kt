@@ -3,6 +3,9 @@ package com.app.features.account
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.core.domain.AppResult
+import com.app.core.domain.LanguagePreference
+import com.app.core.domain.ThemePreference
+import com.app.core.domain.UserPreferencesRepository
 import com.app.core.domain.usecase.GetCurrentUserUseCase
 import com.app.core.domain.usecase.SignOutUseCase
 import com.app.core.domain.usecase.UpdateDisplayNameUseCase
@@ -18,14 +21,47 @@ import kotlinx.coroutines.launch
 class AccountViewModel @Inject constructor(
     getCurrentUserUseCase: GetCurrentUserUseCase,
     private val updateDisplayNameUseCase: UpdateDisplayNameUseCase,
-    private val signOutUseCase: SignOutUseCase
+    private val signOutUseCase: SignOutUseCase,
+    private val preferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(initialState(getCurrentUserUseCase()?.email, getCurrentUserUseCase()?.displayName))
+    private val _uiState = MutableStateFlow(
+        initialState(
+            email = getCurrentUserUseCase()?.email,
+            displayName = getCurrentUserUseCase()?.displayName,
+            themeMode = preferencesRepository.themeMode.value,
+            language = preferencesRepository.language.value
+        )
+    )
     val uiState: StateFlow<AccountUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            preferencesRepository.themeMode.collect { theme ->
+                _uiState.update { it.copy(themeMode = theme) }
+            }
+        }
+        viewModelScope.launch {
+            preferencesRepository.language.collect { lang ->
+                _uiState.update { it.copy(language = lang) }
+            }
+        }
+    }
 
     fun onNameChange(name: String) {
         _uiState.update { it.copy(name = name, justSaved = false, error = null) }
+    }
+
+    fun onThemeChange(mode: ThemePreference) {
+        viewModelScope.launch {
+            preferencesRepository.setThemeMode(mode)
+        }
+    }
+
+    fun onLanguageChange(language: LanguagePreference) {
+        viewModelScope.launch {
+            preferencesRepository.setLanguage(language)
+        }
     }
 
     fun onSave() {
@@ -51,16 +87,23 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    /**
-     * No hace falta navegar a ningún lado: al cerrar la sesión, Firebase avisa y
-     * SessionViewModel cambia solo a la pantalla de acceso.
-     */
     fun onSignOut() {
         viewModelScope.launch { signOutUseCase() }
     }
 }
 
-private fun initialState(email: String?, displayName: String?): AccountUiState {
+private fun initialState(
+    email: String?,
+    displayName: String?,
+    themeMode: ThemePreference,
+    language: LanguagePreference
+): AccountUiState {
     val name = displayName.orEmpty()
-    return AccountUiState(email = email.orEmpty(), name = name, savedName = name)
+    return AccountUiState(
+        email = email.orEmpty(),
+        name = name,
+        savedName = name,
+        themeMode = themeMode,
+        language = language
+    )
 }

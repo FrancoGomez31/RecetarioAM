@@ -50,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -59,6 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.app.core.domain.RecipeField
 import com.app.core.domain.Visibility
+import com.app.core.ui.R
 import com.app.core.ui.RecetarioTheme
 import com.app.core.ui.asMessage
 
@@ -181,7 +183,7 @@ fun RecipeFormScreen(
 
                 CoverSection(state = state, actions = actions)
 
-                FormField(label = "Nombre de la receta *") {
+                FormField(label = stringResource(R.string.form_name_label)) {
                     val invalid = RecipeField.NAME in state.invalidFields
                     OutlinedTextField(
                         value = state.name,
@@ -189,25 +191,25 @@ fun RecipeFormScreen(
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         isError = invalid,
-                        supportingText = requiredMessage(invalid, "Ingresá el nombre de la receta"),
+                        supportingText = requiredMessage(invalid, stringResource(R.string.form_name_error)),
                         shape = RoundedCornerShape(12.dp)
                     )
                 }
 
-                FormField(label = "Descripción") {
+                FormField(label = stringResource(R.string.form_desc_label)) {
                     OutlinedTextField(
                         value = state.description,
                         onValueChange = actions.onDescriptionChange,
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 2,
                         maxLines = 4,
-                        placeholder = { Text("Contá de qué se trata esta receta") },
+                        placeholder = { Text(stringResource(R.string.form_desc_placeholder)) },
                         shape = RoundedCornerShape(12.dp)
                     )
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    FormField(label = "Porciones *", modifier = Modifier.weight(1f)) {
+                    FormField(label = stringResource(R.string.form_servings_label), modifier = Modifier.weight(1f)) {
                         val invalid = RecipeField.SERVINGS in state.invalidFields
                         OutlinedTextField(
                             value = state.servings,
@@ -216,12 +218,12 @@ fun RecipeFormScreen(
                             singleLine = true,
                             isError = invalid,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            suffix = { Text("personas") },
-                            supportingText = requiredMessage(invalid, "Mínimo 1"),
+                            suffix = { Text(stringResource(R.string.form_servings_suffix)) },
+                            supportingText = requiredMessage(invalid, stringResource(R.string.form_servings_error)),
                             shape = RoundedCornerShape(12.dp)
                         )
                     }
-                    FormField(label = "Tiempo total *", modifier = Modifier.weight(1f)) {
+                    FormField(label = stringResource(R.string.form_prep_time_label), modifier = Modifier.weight(1f)) {
                         val invalid = RecipeField.TIME in state.invalidFields
                         OutlinedTextField(
                             value = state.prepTime,
@@ -230,8 +232,8 @@ fun RecipeFormScreen(
                             singleLine = true,
                             isError = invalid,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            suffix = { Text("min") },
-                            supportingText = requiredMessage(invalid, "Indicá el tiempo"),
+                            suffix = { Text(stringResource(R.string.form_prep_time_suffix)) },
+                            supportingText = requiredMessage(invalid, stringResource(R.string.form_prep_time_error)),
                             shape = RoundedCornerShape(12.dp)
                         )
                     }
@@ -267,7 +269,7 @@ fun RecipeFormScreen(
                     } else {
                         Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(if (state.isEditing) "Guardar cambios" else "Guardar receta")
+                        Text(if (state.isEditing) stringResource(R.string.form_btn_save_changes) else stringResource(R.string.form_btn_save_recipe))
                     }
                 }
             }
@@ -283,25 +285,25 @@ private fun FormHeader(
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
             }
             Column {
                 Text(
-                    text = if (state.isEditing) "CARGA MANUAL / MI RECETA" else "CARGA MANUAL",
+                    text = if (state.isEditing) stringResource(R.string.form_edit_mode) else stringResource(R.string.form_new_mode),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = if (state.isEditing) "Editar receta" else "Nueva receta",
+                    text = if (state.isEditing) stringResource(R.string.form_title_edit) else stringResource(R.string.form_title_new),
                     style = MaterialTheme.typography.headlineMedium
                 )
             }
         }
         Text(
             text = if (state.isEditing) {
-                "Tu versión de ${state.originalName}. Los cambios no se publican hasta guardar."
+                stringResource(R.string.form_edit_version_hint, state.originalName)
             } else {
-                "Tu receta empieza siendo privada."
+                stringResource(R.string.form_new_version_hint)
             },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -315,7 +317,7 @@ private fun CoverSection(
     state: RecipeFormUiState,
     actions: RecipeFormActions
 ) {
-    FormField(label = "Portada (opcional)") {
+    FormField(label = stringResource(R.string.form_cover_label)) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(
                 modifier = Modifier
@@ -328,7 +330,7 @@ private fun CoverSection(
                 if (state.coverUri != null) {
                     AsyncImage(
                         model = state.coverUri,
-                        contentDescription = "Portada de la receta",
+                        contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -347,20 +349,20 @@ private fun CoverSection(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(50)
                 ) {
-                    Text(if (state.coverUri == null) "Tomar foto" else "Volver a tomar")
+                    Text(if (state.coverUri == null) stringResource(R.string.form_cover_take) else stringResource(R.string.form_cover_retake))
                 }
                 OutlinedButton(
                     onClick = actions.onPickCoverFromGallery,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(50)
                 ) {
-                    Text("Galería")
+                    Text(stringResource(R.string.form_cover_gallery))
                 }
             }
 
             if (state.coverUri != null) {
                 TextButton(onClick = actions.onRemoveCover) {
-                    Text("Quitar portada")
+                    Text(stringResource(R.string.form_cover_remove))
                 }
             }
 
@@ -372,7 +374,7 @@ private fun CoverSection(
                 )
             } else {
                 Text(
-                    text = "Elegí una foto de la galería o tomá una con la cámara.",
+                    text = stringResource(R.string.form_cover_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -389,20 +391,20 @@ private fun IngredientsSection(
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "Ingredientes",
+                text = stringResource(R.string.form_ingredients_title),
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.weight(1f)
             )
             TextButton(onClick = actions.onAddIngredient) {
                 Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Agregar")
+                Text(stringResource(R.string.form_btn_add))
             }
         }
 
         if (RecipeField.INGREDIENTS in state.invalidFields) {
             Text(
-                text = "Agregá al menos un ingrediente con nombre.",
+                text = stringResource(R.string.form_ingredients_error),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -420,7 +422,7 @@ private fun IngredientsSection(
                         onValueChange = { actions.onIngredientQuantityChange(ingredient.id, it) },
                         modifier = Modifier.weight(0.4f),
                         singleLine = true,
-                        placeholder = { Text("1 kg") },
+                        placeholder = { Text(stringResource(R.string.form_quantity_placeholder)) },
                         shape = RoundedCornerShape(12.dp)
                     )
                     OutlinedTextField(
@@ -428,11 +430,11 @@ private fun IngredientsSection(
                         onValueChange = { actions.onIngredientNameChange(ingredient.id, it) },
                         modifier = Modifier.weight(0.6f),
                         singleLine = true,
-                        placeholder = { Text("Ingrediente") },
+                        placeholder = { Text(stringResource(R.string.form_ingredient_placeholder)) },
                         shape = RoundedCornerShape(12.dp)
                     )
                     IconButton(onClick = { actions.onRemoveIngredient(ingredient.id) }) {
-                        Icon(Icons.Outlined.Delete, contentDescription = "Quitar ingrediente")
+                        Icon(Icons.Outlined.Delete, contentDescription = null)
                     }
                 }
             }
@@ -447,13 +449,13 @@ private fun StepsSection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(
-            text = "Preparación",
+            text = stringResource(R.string.form_steps_title),
             style = MaterialTheme.typography.headlineSmall
         )
 
         if (RecipeField.STEPS in state.invalidFields) {
             Text(
-                text = "Agregá al menos un paso.",
+                text = stringResource(R.string.form_steps_error),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -464,13 +466,13 @@ private fun StepsSection(
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "Paso ${index + 1}",
+                            text = stringResource(R.string.form_step_label, index + 1),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(onClick = { actions.onRemoveStep(step.id) }) {
-                            Icon(Icons.Outlined.Delete, contentDescription = "Quitar paso ${index + 1}")
+                            Icon(Icons.Outlined.Delete, contentDescription = null)
                         }
                     }
                     OutlinedTextField(
@@ -478,7 +480,7 @@ private fun StepsSection(
                         onValueChange = { actions.onStepChange(step.id, it) },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 2,
-                        placeholder = { Text("Explicá qué hacer en este paso") },
+                        placeholder = { Text(stringResource(R.string.form_step_placeholder)) },
                         shape = RoundedCornerShape(12.dp)
                     )
                 }
@@ -492,7 +494,7 @@ private fun StepsSection(
         ) {
             Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Agregar paso")
+            Text(stringResource(R.string.form_btn_add_step))
         }
     }
 }
@@ -505,7 +507,7 @@ private fun OriginSection(
 ) {
     val invalid = RecipeField.ORIGIN in state.invalidFields
 
-    FormField(label = "Origen *") {
+    FormField(label = stringResource(R.string.form_origin_label)) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Surface(
                 onClick = actions.onOriginClick,
@@ -541,7 +543,7 @@ private fun OriginSection(
                     ) {
                         if (state.hasOrigin) {
                             Text(
-                                text = "${state.originLevel} seleccionado",
+                                text = stringResource(R.string.form_origin_selected, state.originLevel),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary
                             )
@@ -553,18 +555,18 @@ private fun OriginSection(
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = "Elegir o cambiar en el mapa",
+                                text = stringResource(R.string.form_origin_change),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         } else {
                             Text(
-                                text = "Elegir el origen",
+                                text = stringResource(R.string.form_origin_choose),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = "Un país, una ciudad o un restaurante",
+                                text = stringResource(R.string.form_origin_hint),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -581,7 +583,7 @@ private fun OriginSection(
 
             if (invalid) {
                 Text(
-                    text = "Elegí el origen de la receta.",
+                    text = stringResource(R.string.form_origin_error),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -595,25 +597,25 @@ private fun VisibilitySection(
     state: RecipeFormUiState,
     actions: RecipeFormActions
 ) {
-    FormField(label = "¿Quién puede verla?") {
+    FormField(label = stringResource(R.string.form_visibility_label)) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
                     selected = state.visibility == Visibility.PRIVATE,
                     onClick = { actions.onVisibilityChange(Visibility.PRIVATE) },
-                    label = { Text("Privada") }
+                    label = { Text(stringResource(R.string.form_visibility_private)) }
                 )
                 FilterChip(
                     selected = state.visibility == Visibility.PUBLIC,
                     onClick = { actions.onVisibilityChange(Visibility.PUBLIC) },
-                    label = { Text("Pública") }
+                    label = { Text(stringResource(R.string.form_visibility_public)) }
                 )
             }
             Text(
                 text = if (state.visibility == Visibility.PUBLIC) {
-                    "Pública: la comunidad puede verla y guardar una copia, pero no editar tu original."
+                    stringResource(R.string.form_visibility_public_desc)
                 } else {
-                    "Privada: solo vos podés verla."
+                    stringResource(R.string.form_visibility_private_desc)
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant

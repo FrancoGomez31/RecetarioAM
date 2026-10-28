@@ -7,19 +7,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.app.core.ui.R
 
-/** Pantalla temporal para las pestañas que todavía no construimos. */
 @Composable
 fun ComingSoonScreen(
     title: String,
     modifier: Modifier = Modifier
 ) {
+    val pendingText = stringResource(R.string.common_pending)
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "$title (pendiente)",
+            text = "$title $pendingText",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
