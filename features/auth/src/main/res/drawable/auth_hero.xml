@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ilustración de la pantalla de acceso: un plato de comida y un pin de mapa ("cada receta, un lugar").
+     Es un vector: se ve nítido en cualquier pantalla y casi no pesa. Proporción 16:9. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="400dp"
+    android:height="225dp"
+    android:viewportWidth="400"
+    android:viewportHeight="225">
+
+    <!-- Fondo -->
+    <path android:fillColor="#F6E3D3" android:pathData="M0,0h400v225h-400z" />
+
+    <!-- Globo terráqueo -->
+    <path android:fillColor="#EFCFB8" android:pathData="M217,112a88,88 0 1,0 176,0a88,88 0 1,0 -176,0z" />
+    <path android:strokeColor="#DDB093" android:strokeWidth="2" android:pathData="M261,112a44,88 0 1,0 88,0a44,88 0 1,0 -88,0z" />
+    <path android:strokeColor="#DDB093" android:strokeWidth="2" android:pathData="M305,24v176M217,112h176M228,70h154M228,154h154" />
+
+    <!-- Camino punteado del plato al pin -->
+    <path android:fillColor="#B5492E" android:pathData="M242,128m-3,0a3,3 0 1,0 6,0a3,3 0 1,0 -6,0M254,118m-3,0a3,3 0 1,0 6,0a3,3 0 1,0 -6,0M266,108m-3,0a3,3 0 1,0 6,0a3,3 0 1,0 -6,0M278,99m-3,0a3,3 0 1,0 6,0a3,3 0 1,0 -6,0M289,92m-3,0a3,3 0 1,0 6,0a3,3 0 1,0 -6,0" />
+
+    <!-- Tenedor -->
+    <path android:fillColor="#8A6F5E" android:pathData="M34,44h4v30h4v-30h4v30h4v-30h4v34q0,10 -8,12v60h-4v-60q-8,-2 -8,-12z" />
+
+    <!-- Plato: sombra, borde y centro -->
+    <path android:fillColor="#1A000000" android:pathData="M153,122m-78,0a78,78 0 1,0 156,0a78,78 0 1,0 -156,0z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M150,118m-78,0a78,78 0 1,0 156,0a78,78 0 1,0 -156,0z" />
+    <path android:fillColor="#F7EEE4" android:strokeColor="#E6D5C4" android:strokeWidth="2" android:pathData="M150,118m-58,0a58,58 0 1,0 116,0a58,58 0 1,0 -116,0z" />
+
+    <!-- Pasta con salsa y albahaca -->
+    <path android:fillColor="#F1C75B" android:pathData="M150,118m-38,0a38,38 0 1,0 76,0a38,38 0 1,0 -76,0z" />
+    <path android:strokeColor="#D9A93A" android:strokeWidth="3" android:pathData="M150,118m-28,0a28,28 0 1,0 56,0a28,28 0 1,0 -56,0M150,118m-18,0a18,18 0 1,0 36,0a18,18 0 1,0 -36,0" />
+    <path android:fillColor="#C4452C" android:pathData="M150,114m-16,0a16,16 0 1,0 32,0a16,16 0 1,0 -32,0z" />
+    <path android:fillColor="#4F7F34" android:pathData="M142,106q8,-14 18,-4q-8,14 -18,4z" />
+    <path android:fillColor="#3F6B2A" android:pathData="M152,112q10,-12 18,0q-10,12 -18,0z" />
+
+    <!-- Pin de mapa -->
+    <path android:fillColor="#26000000" android:pathData="M330,140m-16,0a16,4 0 1,0 32,0a16,4 0 1,0 -32,0z" />
+    <path android:fillColor="#B5492E" android:pathData="M330,52c-17,0 -30,13 -30,30c0,22 30,52 30,52s30,-30 30,-52c0,-17 -13,-30 -30,-30z" />
+    <path android:fillColor="#FAF3E8" android:pathData="M330,82m-11,0a11,11 0 1,0 22,0a11,11 0 1,0 -22,0z" />
+</vector>

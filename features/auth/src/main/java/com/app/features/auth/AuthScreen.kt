@@ -40,6 +40,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.core.ui.RecetarioTheme
 import com.app.core.ui.asMessage
+import androidx.compose.foundation.Image
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 
 @Composable
 fun AuthRoute(
@@ -93,17 +97,20 @@ fun AuthScreen(
                 fontWeight = FontWeight.Medium
             )
 
-            // Placeholder de la foto (se reemplaza cuando carguemos imágenes)
+            // Ilustración de la pantalla de acceso (res/drawable/auth_hero.xml)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(180.dp)
-                    .background(
-                        MaterialTheme.colorScheme.primaryContainer,
-                        RoundedCornerShape(20.dp)
-                    ),
+                    .clip(RoundedCornerShape(20.dp)),
                 contentAlignment = Alignment.BottomStart
             ) {
+                Image(
+                    painter = painterResource(R.drawable.auth_hero),
+                    contentDescription = null,
+                    modifier = Modifier.matchParentSize(),
+                    contentScale = ContentScale.Crop
+                )
                 Surface(
                     modifier = Modifier.padding(12.dp),
                     shape = RoundedCornerShape(50),
@@ -179,14 +186,6 @@ fun AuthScreen(
                 }
             )
 
-            if (isLogin) {
-                TextButton(
-                    onClick = { /* pendiente: recuperar contraseña */ },
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text("¿Olvidaste tu contraseña?")
-                }
-            }
 
             state.error?.let { error ->
                 Text(
@@ -214,22 +213,6 @@ fun AuthScreen(
                 }
             }
 
-            Text(
-                text = "o continuá con",
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            OutlinedButton(
-                onClick = { /* pendiente: Google */ },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-            ) {
-                Text("Continuar con Google")
-            }
 
             Spacer(modifier = Modifier.height(4.dp))
             Text(

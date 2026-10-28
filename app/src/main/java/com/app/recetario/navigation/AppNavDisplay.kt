@@ -88,8 +88,6 @@ fun AppNavDisplay(
             )
         }
 
-        entry<AchievementsDestination> { ComingSoonScreen(title = "Logros") }
-
         entry<AccountDestination> {
             val viewModel: AccountViewModel = hiltViewModel()
             AccountRoute(
