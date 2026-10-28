@@ -14,6 +14,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
 import com.app.recetario.R
 
+/**
+ * Las pestañas de la barra inferior. Cada una tiene su propio back stack, que arranca en [startKey].
+ * Agregar una pestaña = agregar una entrada acá y su pantalla en AppNavDisplay.
+ */
 enum class TopLevelDestination(
     val startKey: NavKey,
     val selectedIcon: ImageVector,
@@ -38,10 +42,4 @@ enum class TopLevelDestination(
         unselectedIcon = Icons.Outlined.Explore,
         label = R.string.tab_explore
     ),
-    ACHIEVEMENTS(
-        startKey = AchievementsDestination,
-        selectedIcon = Icons.Filled.WorkspacePremium,
-        unselectedIcon = Icons.Outlined.WorkspacePremium,
-        label = R.string.tab_achievements
-    )
 }

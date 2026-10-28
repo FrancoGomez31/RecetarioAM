@@ -17,7 +17,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -186,15 +185,6 @@ fun AuthScreen(
                 }
             )
 
-            if (isLogin) {
-                TextButton(
-                    onClick = { },
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text(stringResource(R.string.auth_forgot_password))
-                }
-            }
-
             state.error?.let { error ->
                 Text(
                     text = error.asMessage(),
@@ -219,23 +209,6 @@ fun AuthScreen(
                 } else {
                     Text(if (isLogin) stringResource(R.string.auth_btn_login) else stringResource(R.string.auth_btn_register))
                 }
-            }
-
-            Text(
-                text = stringResource(R.string.auth_continue_with),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            OutlinedButton(
-                onClick = { },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-            ) {
-                Text(stringResource(R.string.auth_continue_google))
             }
 
             Spacer(modifier = Modifier.height(4.dp))
