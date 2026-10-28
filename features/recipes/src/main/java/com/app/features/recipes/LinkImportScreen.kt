@@ -37,12 +37,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.core.domain.DomainError
+import com.app.core.ui.R
 import com.app.core.ui.asMessage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,10 +59,10 @@ fun LinkImportRoute(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nueva receta · Por link") },
+                title = { Text(stringResource(R.string.link_import_top_bar)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 }
             )
@@ -106,12 +108,12 @@ private fun LinkInputStep(onExtract: (String) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "Pegá el link del video o receta",
+            text = stringResource(R.string.link_import_title),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = "La IA va a leer el título y la descripción del enlace y te va a proponer ingredientes y pasos.",
+            text = stringResource(R.string.link_import_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -119,7 +121,7 @@ private fun LinkInputStep(onExtract: (String) -> Unit) {
             value = url,
             onValueChange = { url = it },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("URL del video o receta") },
+            label = { Text(stringResource(R.string.link_import_url_label)) },
             leadingIcon = { Icon(Icons.Outlined.Link, contentDescription = null) },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Uri,
@@ -135,7 +137,7 @@ private fun LinkInputStep(onExtract: (String) -> Unit) {
             enabled = url.isNotBlank(),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Extraer con IA")
+            Text(stringResource(R.string.link_import_btn_extract))
         }
     }
 }
@@ -150,7 +152,7 @@ private fun ExtractingStep() {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             CircularProgressIndicator()
-            Text("Extrayendo receta con IA…", style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.link_import_extracting), style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
@@ -180,7 +182,7 @@ private fun ReviewStep(
                     modifier = Modifier.size(22.dp)
                 )
                 Text(
-                    text = "¡Receta extraída! Revisá antes de guardar.",
+                    text = stringResource(R.string.link_import_extracted_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -188,24 +190,24 @@ private fun ReviewStep(
         }
 
         item {
-            SectionLabel("Nombre")
+            SectionLabel(stringResource(R.string.link_import_name))
             Text(review.name.ifBlank { "—" }, style = MaterialTheme.typography.bodyLarge)
         }
 
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 Column {
-                    SectionLabel("Porciones")
+                    SectionLabel(stringResource(R.string.link_import_servings))
                     Text(review.servings.ifBlank { "—" }, style = MaterialTheme.typography.bodyLarge)
                 }
                 Column {
-                    SectionLabel("Tiempo (min)")
+                    SectionLabel(stringResource(R.string.link_import_prep_time))
                     Text(review.prepTime.ifBlank { "—" }, style = MaterialTheme.typography.bodyLarge)
                 }
             }
         }
 
-        item { SectionLabel("Ingredientes") }
+        item { SectionLabel(stringResource(R.string.link_import_ingredients)) }
 
         itemsIndexed(review.ingredients) { _, ing ->
             Text(
@@ -214,7 +216,7 @@ private fun ReviewStep(
             )
         }
 
-        item { SectionLabel("Pasos") }
+        item { SectionLabel(stringResource(R.string.link_import_steps)) }
 
         itemsIndexed(review.steps) { i, step ->
             Text(
@@ -227,7 +229,7 @@ private fun ReviewStep(
 
         item {
             Text(
-                text = "Podés editar los detalles en el formulario después de confirmar.",
+                text = stringResource(R.string.link_import_edit_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -236,10 +238,10 @@ private fun ReviewStep(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = onConfirm, modifier = Modifier.fillMaxWidth()) {
-                    Text("Confirmar y editar")
+                    Text(stringResource(R.string.link_import_confirm))
                 }
                 TextButton(onClick = onRetry, modifier = Modifier.fillMaxWidth()) {
-                    Text("Intentar con otro link")
+                    Text(stringResource(R.string.link_import_retry_link))
                 }
             }
         }
@@ -256,10 +258,10 @@ private fun ErrorStep(error: DomainError, onRetry: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.padding(24.dp)
         ) {
-            Text("No se pudo extraer la receta", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.link_import_error_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Text(error.asMessage(), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
             Button(onClick = onRetry) {
-                Text("Intentar de nuevo")
+                Text(stringResource(R.string.link_import_btn_retry))
             }
         }
     }

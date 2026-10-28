@@ -37,12 +37,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.app.core.domain.Recipe
 import com.app.core.domain.originLabel
+import com.app.core.ui.R
 import com.app.core.ui.asMessage
 
 @Composable
@@ -87,17 +89,17 @@ fun ExploreScreen(
                     value = state.query,
                     onValueChange = onQueryChange,
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Buscar por receta, país o ingrediente...") },
+                    placeholder = { Text(stringResource(R.string.explore_search_placeholder)) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Search,
-                            contentDescription = "Buscar"
+                            contentDescription = stringResource(R.string.common_search)
                         )
                     },
                     trailingIcon = {
                         if (state.query.isNotEmpty()) {
                             IconButton(onClick = { onQueryChange("") }) {
-                                Icon(Icons.Default.Clear, contentDescription = "Limpiar")
+                                Icon(Icons.Default.Clear, contentDescription = null)
                             }
                         }
                     },
@@ -117,22 +119,22 @@ fun ExploreScreen(
                     FilterChip(
                         selected = state.filter == ExploreFilter.ALL,
                         onClick = { onFilterChange(ExploreFilter.ALL) },
-                        label = { Text("Todas") }
+                        label = { Text(stringResource(R.string.explore_filter_all)) }
                     )
                     FilterChip(
                         selected = state.filter == ExploreFilter.QUICK,
                         onClick = { onFilterChange(ExploreFilter.QUICK) },
-                        label = { Text("⚡ Rápidas (≤35 min)") }
+                        label = { Text(stringResource(R.string.explore_filter_quick)) }
                     )
                     FilterChip(
                         selected = state.filter == ExploreFilter.TESTED,
                         onClick = { onFilterChange(ExploreFilter.TESTED) },
-                        label = { Text("🔥 Probadas") }
+                        label = { Text(stringResource(R.string.explore_filter_tested)) }
                     )
                     FilterChip(
                         selected = state.filter == ExploreFilter.FAMILY,
                         onClick = { onFilterChange(ExploreFilter.FAMILY) },
-                        label = { Text("👨‍👩‍👧‍👦 Familiares (≥4 porc.)") }
+                        label = { Text(stringResource(R.string.explore_filter_family)) }
                     )
                 }
             }
@@ -149,7 +151,7 @@ fun ExploreScreen(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                             Text(
-                                text = " Filtrar por país",
+                                text = stringResource(R.string.explore_filter_country_title),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.primary
                             )
@@ -164,7 +166,7 @@ fun ExploreScreen(
                             FilterChip(
                                 selected = state.selectedCountry == null,
                                 onClick = { onCountrySelect(null) },
-                                label = { Text("Todos") }
+                                label = { Text(stringResource(R.string.explore_filter_country_all)) }
                             )
                             state.availableCountries.forEach { country ->
                                 FilterChip(
@@ -214,12 +216,12 @@ fun ExploreScreen(
                                 style = MaterialTheme.typography.headlineLarge
                             )
                             Text(
-                                text = "No se encontraron recetas con tu búsqueda",
+                                text = stringResource(R.string.explore_empty_title),
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "Probá buscando otros ingredientes, platos o países.",
+                                text = stringResource(R.string.explore_empty_desc),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -242,18 +244,18 @@ fun ExploreScreen(
 private fun ExploreHeader() {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
-            text = "COMUNIDAD & MUNDO",
+            text = stringResource(R.string.explore_header_badge),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = "Explorar recetas",
+            text = stringResource(R.string.explore_header_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.SemiBold
         )
         Text(
-            text = "Inspirate con platos públicos y recetas de diversas culturas.",
+            text = stringResource(R.string.explore_header_desc),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -325,13 +327,13 @@ private fun ExploreRecipeCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "🍽️ ${recipe.servings} porc.",
+                            text = "🍽️ ${recipe.servings} ${stringResource(R.string.explore_card_servings)}",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         if (recipe.attempts > 0) {
                             Text(
-                                text = "⭐ ${recipe.attempts} intentos",
+                                text = "⭐ ${recipe.attempts} ${stringResource(R.string.explore_card_attempts)}",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.secondary,
                                 fontWeight = FontWeight.SemiBold

@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import android.util.Log
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -241,13 +242,13 @@ fun AccountScreen(
                 ) {
                     FilterChip(
                         selected = state.language == LanguagePreference.SPANISH,
-                        onClick = { onLanguageChange(LanguagePreference.SPANISH) },
+                        onClick = { android.util.Log.d("AccountScreen","Language SPANISH selected"); onLanguageChange(LanguagePreference.SPANISH) },
                         label = { Text(stringResource(R.string.settings_language_es)) },
                         modifier = Modifier.weight(1f)
                     )
                     FilterChip(
                         selected = state.language == LanguagePreference.ENGLISH,
-                        onClick = { onLanguageChange(LanguagePreference.ENGLISH) },
+                        onClick = { android.util.Log.d("AccountScreen","Language ENGLISH selected"); onLanguageChange(LanguagePreference.ENGLISH) },
                         label = { Text(stringResource(R.string.settings_language_en)) },
                         modifier = Modifier.weight(1f)
                     )

@@ -3,6 +3,7 @@ package com.app.recetario.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
@@ -11,6 +12,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.app.core.ui.R
 import com.app.features.account.AccountRoute
 import com.app.features.account.AccountViewModel
 import com.app.features.map.MapRoute
@@ -30,10 +32,6 @@ import com.app.features.recipes.explore.ExploreRoute
 import com.app.features.recipes.explore.ExploreViewModel
 import com.app.recetario.ui.ComingSoonScreen
 
-/**
- * La navegación vive en :app. Las features no se conocen entre sí:
- * solo exponen callbacks (onRecipeClick, onAccountClick…) y acá decidimos qué hace cada uno.
- */
 @Composable
 fun AppNavDisplay(
     navigationState: NavigationState,
@@ -49,7 +47,7 @@ fun AppNavDisplay(
                 onCreateManual = { navigationState.navigate(RecipeFormDestination()) },
                 onCreateFromLink = { navigationState.navigate(LinkImportDestination) },
                 onRecipeClick = { id -> navigationState.navigate(RecipeDetailDestination(id)) },
-                onNotificationsClick = { /* las notificaciones se configuran desde el detalle */ },
+                onNotificationsClick = {},
                 onAccountClick = { navigationState.navigate(AccountDestination) }
             )
         }
@@ -87,6 +85,8 @@ fun AppNavDisplay(
                 onRecipeClick = { id -> navigationState.navigate(RecipeDetailDestination(id)) }
             )
         }
+
+        entry<AchievementsDestination> { ComingSoonScreen(title = stringResource(R.string.nav_achievements)) }
 
         entry<AccountDestination> {
             val viewModel: AccountViewModel = hiltViewModel()
@@ -152,9 +152,6 @@ fun AppNavDisplay(
     )
 }
 
-/**
- * Convierte cada back stack en entradas "decoradas" y junta las de las pestañas visibles.
- */
 @Composable
 private fun NavigationState.toEntries(
     entryProvider: (NavKey) -> NavEntry<NavKey>

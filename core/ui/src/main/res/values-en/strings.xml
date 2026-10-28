@@ -1,4 +1,12 @@
 <resources>
+    <!-- Navigation -->
+    <string name="nav_recipes">Recipes</string>
+    <string name="nav_explore">Explore</string>
+    <string name="nav_map">Map</string>
+    <string name="nav_account">Profile</string>
+    <string name="nav_achievements">Achievements</string>
+    <string name="common_pending">(pending)</string>
+
     <!-- Domain errors -->
     <string name="core_ui_error_invalid_email">Enter a valid email address</string>
     <string name="core_ui_error_weak_password">Password must be at least 6 characters</string>
@@ -47,4 +55,233 @@
     <string name="common_search">Search</string>
     <string name="common_all">All</string>
     <string name="common_back">Back</string>
+
+    <!-- Recipes Screen & Creation Sheet -->
+    <string name="recipes_title">My Recipes</string>
+    <string name="recipes_subtitle">Your culinary notebook</string>
+    <string name="recipes_search_placeholder">Search recipe, country or ingredient...</string>
+    <string name="recipes_filter_all">All</string>
+    <string name="recipes_filter_mine">Mine</string>
+    <string name="recipes_filter_public">Public</string>
+    <string name="recipes_empty_title">Your notebook is empty</string>
+    <string name="recipes_empty_subtitle">Tap the + button to add your first recipe.</string>
+    <string name="recipes_filter_empty">No recipes found for this filter.</string>
+    <string name="create_sheet_label">NEW RECIPE</string>
+    <string name="create_sheet_title">Create recipe</string>
+    <string name="create_option_manual_title">Manual</string>
+    <string name="create_option_manual_desc">Type ingredients and steps your way.</string>
+    <string name="create_option_link_title">From link · AI</string>
+    <string name="create_option_link_desc">Paste a link to a video or recipe and AI extracts ingredients and steps.</string>
+    <string name="create_option_private_hint">Your recipe starts as private.</string>
+    <string name="create_option_coming_soon">Coming soon</string>
+
+    <!-- Link Import -->
+    <string name="link_import_top_bar">New recipe · From link</string>
+    <string name="link_import_title">Paste the video or recipe link</string>
+    <string name="link_import_subtitle">AI will read title and description from the link and propose ingredients and steps.</string>
+    <string name="link_import_url_label">Video or recipe URL</string>
+    <string name="link_import_btn_extract">Extract with AI</string>
+    <string name="link_import_extracting">Extracting recipe with AI…</string>
+    <string name="link_import_extracted_title">Recipe extracted! Review before saving.</string>
+    <string name="link_import_name">Name</string>
+    <string name="link_import_servings">Servings</string>
+    <string name="link_import_prep_time">Time (min)</string>
+    <string name="link_import_ingredients">Ingredients</string>
+    <string name="link_import_steps">Steps</string>
+    <string name="link_import_edit_hint">You can edit details in the form after confirming.</string>
+    <string name="link_import_confirm">Confirm and edit</string>
+    <string name="link_import_retry_link">Try with another link</string>
+    <string name="link_import_error_title">Could not extract recipe</string>
+    <string name="link_import_btn_retry">Try again</string>
+
+    <!-- Recipe Detail -->
+    <string name="detail_delete_dialog_title">Delete recipe?</string>
+    <string name="detail_delete_dialog_msg">You are going to delete \"%1$s\". This action cannot be undone.</string>
+    <string name="detail_delete_confirm">Delete</string>
+    <string name="detail_delete_cancel">Cancel</string>
+    <string name="detail_load_error">We couldn\'t load the recipe.</string>
+    <string name="detail_visibility_public">Public</string>
+    <string name="detail_visibility_private">Private</string>
+    <string name="detail_own_recipe">Own recipe</string>
+    <string name="detail_ingredients_title">Ingredients</string>
+    <string name="detail_steps_title">Step by step</string>
+    <string name="detail_steps_count_one">1 step</string>
+    <string name="detail_steps_count_many">%1$d steps</string>
+    <string name="detail_origin_title">The origin of this flavor</string>
+    <string name="detail_origin_level_rest">restaurant</string>
+    <string name="detail_origin_level_city">city</string>
+    <string name="detail_origin_level_country">country</string>
+    <string name="detail_origin_level_from">Origin at %1$s level from %2$s</string>
+    <string name="detail_origin_level_no_user">Origin at %1$s level</string>
+    <string name="detail_origin_distance_disclaimer">Straight-line geographical distance; does not indicate actual travel routes.</string>
+    <string name="detail_origin_enable_loc_hint">Enable your location in the Map tab to see distance from where you cook.</string>
+    <string name="detail_reminder_title">Cooking reminder</string>
+    <string name="detail_reminder_scheduled">Scheduled notice to cook this recipe</string>
+    <string name="detail_reminder_not_scheduled">Not scheduled (notify me in 10 seconds to test)</string>
+    <string name="detail_progress_title">My progress</string>
+    <string name="detail_attempts_zero">You haven\'t cooked this recipe yet.</string>
+    <string name="detail_attempts_one">You cooked this recipe 1 time.</string>
+    <string name="detail_attempts_many">You cooked this recipe %1$d times.</string>
+    <string name="detail_btn_register_attempt">Register attempt</string>
+    <string name="detail_attempt_number">Attempt %1$d · %2$s</string>
+    <string name="detail_no_photos">No photos</string>
+    <string name="detail_one_photo">1 photo</string>
+    <string name="detail_many_photos">%1$d photos</string>
+    <string name="detail_servings_one">1 serving</string>
+    <string name="detail_servings_many">%1$d servings</string>
+    <string name="detail_edit_content_desc">Edit recipe</string>
+    <string name="detail_delete_content_desc">Delete recipe</string>
+
+    <!-- Recipe Form -->
+    <string name="form_edit_mode">MANUAL ENTRY / MY RECIPE</string>
+    <string name="form_new_mode">MANUAL ENTRY</string>
+    <string name="form_title_edit">Edit recipe</string>
+    <string name="form_title_new">New recipe</string>
+    <string name="form_edit_version_hint">Your version of %1$s. Changes are not published until saved.</string>
+    <string name="form_new_version_hint">Your recipe starts as private.</string>
+    <string name="form_name_label">Recipe name *</string>
+    <string name="form_name_error">Enter recipe name</string>
+    <string name="form_desc_label">Description</string>
+    <string name="form_desc_placeholder">Tell what this recipe is about</string>
+    <string name="form_servings_label">Servings *</string>
+    <string name="form_servings_suffix">people</string>
+    <string name="form_servings_error">Minimum 1</string>
+    <string name="form_prep_time_label">Total time *</string>
+    <string name="form_prep_time_suffix">min</string>
+    <string name="form_prep_time_error">Indicate time</string>
+    <string name="form_cover_label">Cover photo (optional)</string>
+    <string name="form_cover_take">Take photo</string>
+    <string name="form_cover_retake">Retake photo</string>
+    <string name="form_cover_gallery">Gallery</string>
+    <string name="form_cover_remove">Remove cover</string>
+    <string name="form_cover_hint">Choose a photo from gallery or take one with camera.</string>
+    <string name="form_ingredients_title">Ingredients</string>
+    <string name="form_btn_add">Add</string>
+    <string name="form_ingredients_error">Add at least one ingredient with a name.</string>
+    <string name="form_quantity_placeholder">1 kg</string>
+    <string name="form_ingredient_placeholder">Ingredient</string>
+    <string name="form_steps_title">Preparation</string>
+    <string name="form_steps_error">Add at least one step.</string>
+    <string name="form_step_label">Step %1$d</string>
+    <string name="form_step_placeholder">Explain what to do in this step</string>
+    <string name="form_btn_add_step">Add step</string>
+    <string name="form_origin_label">Origin *</string>
+    <string name="form_origin_selected">%1$s selected</string>
+    <string name="form_origin_change">Choose or change on map</string>
+    <string name="form_origin_choose">Choose origin</string>
+    <string name="form_origin_hint">A country, a city or a restaurant</string>
+    <string name="form_origin_error">Choose the recipe\'s origin.</string>
+    <string name="form_visibility_label">Who can see it?</string>
+    <string name="form_visibility_private">Private</string>
+    <string name="form_visibility_public">Public</string>
+    <string name="form_visibility_public_desc">Public: community can see it and save a copy, but not edit your original.</string>
+    <string name="form_visibility_private_desc">Private: only you can see it.</string>
+    <string name="form_btn_save_changes">Save changes</string>
+    <string name="form_btn_save_recipe">Save recipe</string>
+
+    <!-- Explore -->
+    <string name="explore_header_badge">COMMUNITY &amp; WORLD</string>
+    <string name="explore_header_title">Explore recipes</string>
+    <string name="explore_header_desc">Get inspired by public dishes and recipes from diverse cultures.</string>
+    <string name="explore_search_placeholder">Search by recipe, country or ingredient...</string>
+    <string name="explore_filter_all">All</string>
+    <string name="explore_filter_quick">⚡ Quick (≤35 min)</string>
+    <string name="explore_filter_tested">🔥 Tested</string>
+    <string name="explore_filter_family">👨‍👩‍👧‍👦 Family (≥4 serv.)</string>
+    <string name="explore_filter_country_title"> Filter by country</string>
+    <string name="explore_filter_country_all">All</string>
+    <string name="explore_empty_title">No recipes found for your search</string>
+    <string name="explore_empty_desc">Try searching for other ingredients, dishes or countries.</string>
+    <string name="explore_card_servings">serv.</string>
+    <string name="explore_card_attempts">attempts</string>
+
+    <!-- Register Attempt -->
+    <string name="attempt_title">Register my attempt</string>
+    <string name="attempt_today">Attempt %1$d · Today</string>
+    <string name="attempt_saved">Saved</string>
+    <string name="attempt_not_saved">Not saved</string>
+    <string name="attempt_step_assoc">Associate photo with a step</string>
+    <string name="attempt_step_label">Step %1$d</string>
+    <string name="attempt_photo_review">Photo under review</string>
+    <string name="attempt_photo_step">Step photo</string>
+    <string name="attempt_no_photo_chosen">You haven\'t chosen a photo yet</string>
+    <string name="attempt_take_photo">Take photo</string>
+    <string name="attempt_retake_photo">Retake photo</string>
+    <string name="attempt_gallery">Gallery</string>
+    <string name="attempt_comparison_title">Same step, another attempt</string>
+    <string name="attempt_first_attempt">This is your first attempt for this recipe: nothing to compare yet.</string>
+    <string name="attempt_comparison_hint">Step %1$d · Compare shape and texture with your previous attempts.</string>
+    <string name="attempt_no_photo_step">No photo in this step</string>
+    <string name="attempt_saved_photos_title">Photos from this attempt</string>
+    <string name="attempt_add_another_photo">Add another photo</string>
+    <string name="attempt_note_title">Attempt note</string>
+    <string name="attempt_note_placeholder">What did you change? How did it turn out?</string>
+    <string name="attempt_privacy_notice">Your progress photos are private, even if the recipe is public.</string>
+    <string name="attempt_btn_save_photo">Save photo in attempt %1$d</string>
+    <string name="attempt_btn_save_note">Save note for attempt %1$d</string>
+    <string name="attempt_btn_choose_photo">Choose a photo to save</string>
+
+    <!-- Place Picker -->
+    <string name="place_picker_header_badge">THE PLACE BEHIND THE RECIPE</string>
+    <string name="place_picker_header_title">Choose origin</string>
+    <string name="place_picker_header_desc">Choose a country, a city or the restaurant where your inspiration was born.</string>
+    <string name="place_picker_type_country">Country</string>
+    <string name="place_picker_type_city">City</string>
+    <string name="place_picker_type_restaurant">Restaurant</string>
+    <string name="place_picker_search_country">Search a country</string>
+    <string name="place_picker_search_city">Search a city</string>
+    <string name="place_picker_search_restaurant">Search a restaurant</string>
+    <string name="place_picker_back_to_map">Back to map</string>
+    <string name="place_picker_no_results">No places found with that name. Try another search or change tabs.</string>
+    <string name="place_picker_search_prompt">Search for a place to locate it on the map.</string>
+    <string name="place_picker_use_origin">Use %1$s as origin</string>
+    <string name="place_picker_choose_place">Choose a place</string>
+    <string name="place_picker_user_loc_title">Your location doesn\'t define the origin</string>
+    <string name="place_picker_user_loc_desc">%1$s is your current reference point. You can choose a kitchen from anywhere in the world.</string>
+    <string name="place_picker_user_loc_desc_no_loc">Your location is only a reference for distance. You can choose a kitchen from anywhere in the world.</string>
+    <string name="place_picker_move_map_hint">Move the map to adjust the pin. You can also press and hold a point.</string>
+
+    <!-- Atlas / Map -->
+    <string name="map_title">My flavor atlas</string>
+    <string name="map_country_count_one">1 COUNTRY</string>
+    <string name="map_country_count_many">%1$d COUNTRIES</string>
+    <string name="map_origin_count_one">1 ORIGIN</string>
+    <string name="map_origin_count_many">%1$d ORIGINS</string>
+    <string name="map_loc_enable_title">Enable your location</string>
+    <string name="map_loc_enable_desc">This lets us calculate where you cook from. You can also enable it in phone settings.</string>
+    <string name="map_loc_allow">Allow</string>
+    <string name="map_loc_failed_title">Couldn\'t locate you</string>
+    <string name="map_loc_retry">Retry</string>
+    <string name="map_loc_updating">Updating your location…</string>
+    <string name="map_loc_searching">Searching your location…</string>
+    <string name="map_all">All</string>
+    <string name="map_legend_origin">Recipe origin</string>
+    <string name="map_legend_user">Your location</string>
+    <string name="map_other_origins">Other explored cuisines</string>
+    <string name="map_empty_title">Your atlas is empty</string>
+    <string name="map_empty_desc">When you save a recipe and choose its origin on the map, it will appear here with its pin.</string>
+    <string name="map_info_title">A map to discover, not to navigate</string>
+    <string name="map_info_desc">Each pin is the origin of a saved recipe. Distances are straight-line geographical: they are not actual travel routes.</string>
+    <string name="map_collection_count">%1$s in your collection</string>
+    <string name="map_from_user_loc">From your current location</string>
+    <string name="map_view_recipe">View recipe →</string>
+
+    <!-- Authentication -->
+    <string name="auth_subtitle">YOUR CULINARY NOTEBOOK</string>
+    <string name="auth_title">Recipe Book with Origin</string>
+    <string name="auth_card_badge">Every recipe, a place.</string>
+    <string name="auth_hero_title">The world starts in your kitchen.</string>
+    <string name="auth_hero_desc">Save flavors, discover their origin, and make every attempt a new story.</string>
+    <string name="auth_tab_login">Sign in</string>
+    <string name="auth_tab_register">Create account</string>
+    <string name="auth_label_email">Email address</string>
+    <string name="auth_label_password">Password</string>
+    <string name="auth_show_password">Show</string>
+    <string name="auth_hide_password">Hide</string>
+    <string name="auth_forgot_password">Forgot your password?</string>
+    <string name="auth_btn_login">Sign in to my recipe book</string>
+    <string name="auth_btn_register">Create my account</string>
+    <string name="auth_continue_with">or continue with</string>
+    <string name="auth_continue_google">Continue with Google</string>
+    <string name="auth_terms_notice">By continuing you accept Terms and Privacy Policy. Your recipes are private by default.</string>
 </resources>

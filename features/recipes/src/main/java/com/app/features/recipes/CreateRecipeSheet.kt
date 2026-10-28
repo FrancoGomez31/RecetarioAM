@@ -29,10 +29,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.app.core.ui.R
 import com.app.core.ui.RecetarioTheme
 
 /**
@@ -79,34 +81,34 @@ private fun CreateRecipeSheetContent(
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                text = "NUEVA RECETA",
+                text = stringResource(R.string.create_sheet_label),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = "Crear receta",
+                text = stringResource(R.string.create_sheet_title),
                 style = MaterialTheme.typography.headlineSmall
             )
         }
 
         CreateOptionCard(
             icon = Icons.Outlined.Edit,
-            title = "Manual",
-            description = "Escribí ingredientes y pasos a tu manera.",
+            title = stringResource(R.string.create_option_manual_title),
+            description = stringResource(R.string.create_option_manual_desc),
             enabled = true,
             onClick = onManualClick
         )
 
         CreateOptionCard(
             icon = Icons.Outlined.Link,
-            title = "Por link · IA",
-            description = "Pegá el link de un video o receta y la IA extrae los ingredientes y pasos.",
+            title = stringResource(R.string.create_option_link_title),
+            description = stringResource(R.string.create_option_link_desc),
             enabled = linkEnabled,
             onClick = onLinkClick
         )
 
         Text(
-            text = "Tu receta empieza siendo privada.",
+            text = stringResource(R.string.create_option_private_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -180,7 +182,7 @@ private fun CreateOptionCard(
                 )
             } else {
                 Text(
-                    text = "Próximamente",
+                    text = stringResource(R.string.create_option_coming_soon),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

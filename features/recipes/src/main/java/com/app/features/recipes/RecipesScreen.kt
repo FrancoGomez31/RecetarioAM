@@ -37,9 +37,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import androidx.compose.ui.res.stringResource
 import com.app.core.domain.Recipe
 import com.app.core.domain.Visibility
 import com.app.core.domain.originLabel
+import com.app.core.ui.R
 import com.app.core.ui.RecetarioTheme
 import com.app.core.ui.asMessage
 
@@ -116,7 +118,7 @@ fun RecipesScreen(
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
-                            text = "Sabores que ya son tuyos.",
+                            text = stringResource(R.string.recipes_subtitle),
                             style = MaterialTheme.typography.headlineMedium
                         )
                         Text(
@@ -131,7 +133,7 @@ fun RecipesScreen(
                         value = state.query,
                         onValueChange = onQueryChange,
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Buscá por receta u origen") },
+                        placeholder = { Text(stringResource(R.string.recipes_search_placeholder)) },
                         singleLine = true,
                         shape = RoundedCornerShape(50)
                     )
@@ -141,17 +143,17 @@ fun RecipesScreen(
                         FilterChip(
                             selected = state.filter == RecipeFilter.ALL,
                             onClick = { onFilterChange(RecipeFilter.ALL) },
-                            label = { Text("Todas · ${state.totalCount}") }
+                            label = { Text("${stringResource(R.string.recipes_filter_all)} · ${state.totalCount}") }
                         )
                         FilterChip(
                             selected = state.filter == RecipeFilter.PRIVATE,
                             onClick = { onFilterChange(RecipeFilter.PRIVATE) },
-                            label = { Text("Privadas · ${state.privateCount}") }
+                            label = { Text("${stringResource(R.string.recipes_filter_mine)} · ${state.privateCount}") }
                         )
                         FilterChip(
                             selected = state.filter == RecipeFilter.PUBLIC,
                             onClick = { onFilterChange(RecipeFilter.PUBLIC) },
-                            label = { Text("Públicas · ${state.publicCount}") }
+                            label = { Text("${stringResource(R.string.recipes_filter_public)} · ${state.publicCount}") }
                         )
                     }
                 }
@@ -176,7 +178,7 @@ fun RecipesScreen(
                 } else if (state.visibleRecipes.isEmpty()) {
                     item {
                         Text(
-                            text = "No encontramos recetas con ese filtro.",
+                            text = stringResource(R.string.recipes_filter_empty),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -217,12 +219,12 @@ private fun Header(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "TU CUADERNO",
+                text = stringResource(R.string.auth_subtitle),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = "Mis recetas",
+                text = stringResource(R.string.recipes_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Medium
             )
@@ -231,7 +233,7 @@ private fun Header(
             Text("🔔")
         }
         OutlinedButton(onClick = onAccountClick) {
-            Text("Mi cuenta")
+            Text(stringResource(R.string.nav_account))
         }
     }
 }
@@ -290,13 +292,13 @@ private fun RecipeCard(
                 )
                 if (recipe.visibility == Visibility.PUBLIC) {
                     Text(
-                        text = "Pública",
+                        text = stringResource(R.string.detail_visibility_public),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.secondary
                     )
                 } else {
                     Text(
-                        text = "Privada",
+                        text = stringResource(R.string.detail_visibility_private),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -312,16 +314,26 @@ private fun RecipeCard(
     }
 }
 
+@Composable
 private fun attemptsText(attempts: Int): String = when (attempts) {
-    0 -> "Sin cocinar"
-    1 -> "1 intento"
-    else -> "$attempts intentos"
+    0 -> stringResource(R.string.detail_attempts_zero)
+    1 -> stringResource(R.string.detail_attempts_one)
+    else -> stringResource(R.string.detail_attempts_many, attempts)
 }
 
+@Composable
 private fun summaryText(state: RecipesUiState): String {
-    val recipes = if (state.totalCount == 1) "1 receta" else "${state.totalCount} recetas"
-    val countries = if (state.countryCount == 1) "1 país" else "${state.countryCount} países"
-    return "$recipes · $countries · muchas ganas de cocinar"
+    val recipes = if (state.totalCount == 1) {
+        stringResource(R.string.detail_servings_one).replace("porción", "receta").replace("serving", "recipe")
+    } else {
+        stringResource(R.string.detail_servings_many, state.totalCount).replace("porciones", "recetas").replace("servings", "recipes")
+    }
+    val countries = if (state.countryCount == 1) {
+        stringResource(R.string.map_country_count_one).lowercase()
+    } else {
+        stringResource(R.string.map_country_count_many, state.countryCount).lowercase()
+    }
+    return "$recipes · $countries"
 }
 
 @Preview(showBackground = true)

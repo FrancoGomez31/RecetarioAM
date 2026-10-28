@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.core.domain.AppResult
 import com.app.core.domain.Ingredient
+import com.app.core.domain.LanguagePreference
 import com.app.core.domain.Recipe
+import com.app.core.domain.UserPreferencesRepository
 import com.app.core.domain.Visibility
 import com.app.core.domain.usecase.GetRecipesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +19,8 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class ExploreViewModel @Inject constructor(
-    private val getRecipesUseCase: GetRecipesUseCase
+    private val getRecipesUseCase: GetRecipesUseCase,
+    private val preferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ExploreUiState())
@@ -25,25 +28,31 @@ class ExploreViewModel @Inject constructor(
 
     init {
         loadExploreRecipes()
+        viewModelScope.launch {
+            preferencesRepository.language.collect {
+                loadExploreRecipes()
+            }
+        }
     }
 
     fun loadExploreRecipes() {
+        val isEnglish = preferencesRepository.language.value == LanguagePreference.ENGLISH
+        val recipesToUse = if (isEnglish) communityRecipesEn else communityRecipesEs
+
         _uiState.update { it.copy(isLoading = it.recipes.isEmpty(), error = null) }
         viewModelScope.launch {
             when (val result = getRecipesUseCase()) {
                 is AppResult.Success -> {
                     val publicFromRepo = result.data.filter { it.visibility == Visibility.PUBLIC }
-                    // Combinamos con recetas de la comunidad para enriquecer el explorador
-                    val combined = (publicFromRepo + communityRecipes)
+                    val combined = (publicFromRepo + recipesToUse)
                         .distinctBy { it.id }
                     _uiState.update {
                         it.copy(recipes = combined, isLoading = false)
                     }
                 }
                 is AppResult.Error -> {
-                    // Si falla el repositorio, aún mostramos el catálogo comunitario offline
                     _uiState.update {
-                        it.copy(recipes = communityRecipes, isLoading = false, error = result.error)
+                        it.copy(recipes = recipesToUse, isLoading = false, error = result.error)
                     }
                 }
             }
@@ -65,7 +74,7 @@ class ExploreViewModel @Inject constructor(
     }
 
     companion object {
-        val communityRecipes = listOf(
+        val communityRecipesEs = listOf(
             Recipe(
                 id = "comm_1",
                 name = "Tacos al Pastor",
@@ -172,6 +181,119 @@ class ExploreViewModel @Inject constructor(
                     "Calentar el caldo tonkotsu hasta que esté bien humeante.",
                     "Hervir los fideos durante 90 segundos y escurrir rápidamente.",
                     "Armar el tazón: base de fideos, caldo caliente, láminas de chashu, huevo cortado al medio y nori."
+                ),
+                latitude = 33.5902,
+                longitude = 130.4017
+            )
+        )
+
+        val communityRecipesEn = listOf(
+            Recipe(
+                id = "comm_1",
+                name = "Pastor Tacos",
+                photoUrl = null,
+                city = "Mexico City",
+                country = "Mexico",
+                prepTimeMinutes = 45,
+                attempts = 4,
+                visibility = Visibility.PUBLIC,
+                description = "Marinated pork with achiote and chiles, served with grilled pineapple and fresh cilantro.",
+                servings = 4,
+                ingredients = listOf(
+                    Ingredient("500 g", "Pork meat"),
+                    Ingredient("2 tbsp", "Achiote paste"),
+                    Ingredient("1/2 cup", "Sour orange juice"),
+                    Ingredient("1 slice", "Grilled pineapple"),
+                    Ingredient("12 pcs", "Corn tortillas"),
+                    Ingredient("To taste", "Chopped onion and cilantro")
+                ),
+                steps = listOf(
+                    "Marinate the pork with achiote and orange juice for at least 2 hours.",
+                    "Cook the meat in a very hot skillet until deeply browned.",
+                    "Chop the meat and serve on warm tortillas with pineapple, cilantro, and onion."
+                ),
+                latitude = 19.4326,
+                longitude = -99.1332
+            ),
+            Recipe(
+                id = "comm_2",
+                name = "Valencian Paella",
+                photoUrl = null,
+                city = "Valencia",
+                country = "Spain",
+                prepTimeMinutes = 55,
+                attempts = 2,
+                visibility = Visibility.PUBLIC,
+                description = "Authentic traditional paella with bomba rice, saffron, chicken, and green beans.",
+                servings = 6,
+                ingredients = listOf(
+                    Ingredient("400 g", "Bomba rice"),
+                    Ingredient("500 g", "Chopped chicken"),
+                    Ingredient("150 g", "Green beans"),
+                    Ingredient("1 tsp", "Saffron threads"),
+                    Ingredient("1 liter", "Chicken broth"),
+                    Ingredient("3 tbsp", "Extra virgin olive oil")
+                ),
+                steps = listOf(
+                    "Brown the chicken well in the paella pan with olive oil.",
+                    "Add green beans and sauté for a few minutes.",
+                    "Add rice, sauté briefly and pour in hot broth with saffron.",
+                    "Cook 10 min on high heat and 8 min on low heat until socarrat forms."
+                ),
+                latitude = 39.4699,
+                longitude = -0.3763
+            ),
+            Recipe(
+                id = "comm_3",
+                name = "Butter Croissant",
+                photoUrl = null,
+                city = "Paris",
+                country = "France",
+                prepTimeMinutes = 90,
+                attempts = 1,
+                visibility = Visibility.PUBLIC,
+                description = "Flaky laminated pastry, crispy on the outside and tender and fluffy on the inside.",
+                servings = 8,
+                ingredients = listOf(
+                    Ingredient("500 g", "Wheat flour"),
+                    Ingredient("250 g", "Cold dry butter"),
+                    Ingredient("10 g", "Dry yeast"),
+                    Ingredient("50 g", "Sugar"),
+                    Ingredient("10 g", "Salt"),
+                    Ingredient("280 ml", "Cold milk")
+                ),
+                steps = listOf(
+                    "Knead flour, yeast, sugar, salt, and milk until smooth dough forms. Let rest.",
+                    "Laminate butter inside the dough doing three simple folds with cold rests.",
+                    "Cut triangles, roll up, and ferment for 2 hours at 26°C.",
+                    "Brush with egg and bake at 190°C for 18 minutes."
+                ),
+                latitude = 48.8566,
+                longitude = 2.3522
+            ),
+            Recipe(
+                id = "comm_4",
+                name = "Tonkotsu Ramen",
+                photoUrl = null,
+                city = "Fukuoka",
+                country = "Japan",
+                prepTimeMinutes = 30,
+                attempts = 5,
+                visibility = Visibility.PUBLIC,
+                description = "Artisanal noodles in creamy broth with chashu, marinated egg, and scallions.",
+                servings = 2,
+                ingredients = listOf(
+                    Ingredient("200 g", "Fresh ramen noodles"),
+                    Ingredient("600 ml", "Concentrated tonkotsu broth"),
+                    Ingredient("4 slices", "Pork chashu"),
+                    Ingredient("2 pcs", "Marinated ajitama eggs"),
+                    Ingredient("1 sheet", "Nori seaweed"),
+                    Ingredient("2 stalks", "Chopped scallions")
+                ),
+                steps = listOf(
+                    "Heat tonkotsu broth until steaming hot.",
+                    "Boil noodles for 90 seconds and drain quickly.",
+                    "Assemble bowl: base of noodles, hot broth, chashu slices, halved egg, and nori."
                 ),
                 latitude = 33.5902,
                 longitude = 130.4017

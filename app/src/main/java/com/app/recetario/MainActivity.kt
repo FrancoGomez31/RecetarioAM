@@ -10,6 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.core.domain.LanguagePreference
@@ -52,6 +53,11 @@ class MainActivity : ComponentActivity() {
                 Configuration(configuration).apply {
                     setLocale(locale)
                 }
+            }
+
+            val context = LocalContext.current
+            LaunchedEffect(updatedConfiguration) {
+                context.resources.updateConfiguration(updatedConfiguration, context.resources.displayMetrics)
             }
 
             CompositionLocalProvider(

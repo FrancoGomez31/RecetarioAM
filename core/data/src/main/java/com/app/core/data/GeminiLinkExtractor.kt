@@ -9,6 +9,7 @@ import com.app.core.domain.RecipeLinkExtractor
 import com.app.core.domain.Visibility
 import java.io.IOException
 import java.net.UnknownHostException
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Named
 import kotlin.coroutines.cancellation.CancellationException
@@ -20,13 +21,14 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.concurrent.TimeUnit
 
 /**
  * Implementación de [RecipeLinkExtractor]:
- *  1. Hace un GET a la URL para extraer texto de meta-tags OpenGraph (og:title, og:description).
- *  2. Envía ese texto a Gemini API con un prompt que fuerza respuesta JSON estructurada.
- *  3. Parsea y devuelve una [Recipe] borrador para que el usuario la revise y complete.
+ *  - Extrae título y descripción completa del video (o página web).
+ *  - En YouTube: busca `shortDescription` en el HTML de YouTube, donde los creadores suelen poner la receta completa.
+ *  - Envía la información a Gemini (modelo `gemini-3.5-flash-lite`) con un prompt inteligente que reconstruye e infiere
+ *    los ingredientes y pasos completos aún cuando la descripción sea resumida.
+ *  - Devuelve una [Recipe] borrador completa y detallada.
  */
 class GeminiLinkExtractor @Inject constructor(
     @Named("gemini_api_key") private val apiKey: String
@@ -37,29 +39,36 @@ class GeminiLinkExtractor @Inject constructor(
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    override suspend fun extract(url: String): AppResult<Recipe> = withContext(Dispatchers.IO) {
+    private val geminiUrl =
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=$apiKey"
+
+    override suspend fun extract(url: String, languageCode: String): AppResult<Recipe> = withContext(Dispatchers.IO) {
         try {
-            val pageText = fetchPageText(url)
-            val recipe = callGemini(pageText)
+            Log.d(TAG, "Iniciando extracción para link: $url (idioma: $languageCode)")
+            val pageInfo = fetchPageInfo(url)
+            val recipe = callGemini(pageInfo, languageCode)
             AppResult.Success(recipe)
         } catch (e: CancellationException) {
             throw e
         } catch (e: UnknownHostException) {
-            Log.e("GeminiLinkExtractor", "Error de host / sin internet al extraer link", e)
+            Log.e(TAG, "Sin internet al extraer link", e)
             AppResult.Error(DomainError.Network)
         } catch (e: IOException) {
-            Log.e("GeminiLinkExtractor", "Error de E/S de red al extraer link", e)
+            Log.e(TAG, "Error de red al extraer link", e)
             AppResult.Error(DomainError.Network)
         } catch (e: Exception) {
-            Log.e("GeminiLinkExtractor", "Error inesperado al extraer link", e)
+            Log.e(TAG, "Error al extraer receta: ${e.message}", e)
             AppResult.Error(DomainError.Unknown(e.message))
         }
     }
 
-    private fun fetchPageText(url: String): String {
+    private data class PageInfo(val title: String, val description: String)
+
+    private fun fetchPageInfo(url: String): PageInfo {
         val request = Request.Builder()
             .url(url)
-            .header("User-Agent", "Mozilla/5.0 (compatible; RecetarioApp/1.0)")
+            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            .header("Accept-Language", "es-ES,es;q=0.9,en;q=0.8")
             .build()
 
         val html = client.newCall(request).execute().use { response ->
@@ -67,43 +76,101 @@ class GeminiLinkExtractor @Inject constructor(
             response.body?.string() ?: throw Exception("Respuesta vacía del link")
         }
 
-        val ogTitle = Regex("""<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']""", RegexOption.IGNORE_CASE)
-            .find(html)?.groupValues?.getOrNull(1)
-            ?: Regex("""<title[^>]*>([^<]+)</title>""", RegexOption.IGNORE_CASE).find(html)?.groupValues?.getOrNull(1)
-            ?: ""
+        val isYouTube = url.contains("youtube.com", ignoreCase = true) || url.contains("youtu.be", ignoreCase = true)
 
-        val ogDesc = Regex("""<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']""", RegexOption.IGNORE_CASE)
-            .find(html)?.groupValues?.getOrNull(1)
-            ?: Regex("""<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']""", RegexOption.IGNORE_CASE)
-            .find(html)?.groupValues?.getOrNull(1)
-            ?: ""
+        val title = if (isYouTube) {
+            extractYouTubeTitle(html)
+        } else {
+            extractMetaProperty(html, "og:title")
+                ?: extractRegex(html, """<title[^>]*>([^<]+)</title>""")
+                ?: ""
+        }
 
-        val text = listOf(ogTitle, ogDesc).filter { it.isNotBlank() }.joinToString("\n\n")
-        if (text.isBlank()) throw Exception("No se encontró texto en el link")
-        return text
+        val description = if (isYouTube) {
+            extractYouTubeFullDescription(html)
+        } else {
+            extractMetaProperty(html, "og:description")
+                ?: extractMetaName(html, "description")
+                ?: ""
+        }
+
+        val cleanTitle = title.replace(" - YouTube", "").trim()
+        val cleanDesc = unescapeJsonString(description).trim()
+
+        if (cleanTitle.isBlank() && cleanDesc.isBlank()) {
+            throw Exception("No se pudo obtener información del link")
+        }
+
+        Log.d(TAG, "Info extraída -> Título: '$cleanTitle', Longitud desc: ${cleanDesc.length}")
+        return PageInfo(title = cleanTitle, description = cleanDesc)
     }
 
-    private fun callGemini(pageText: String): Recipe {
+    private fun extractYouTubeTitle(html: String): String {
+        return extractRegex(html, """"title":"(.*?)"(?=,"lengthSeconds")""")
+            ?: extractRegex(html, """<title[^>]*>([^<]+)</title>""")
+            ?: extractMetaProperty(html, "og:title")
+            ?: ""
+    }
+
+    private fun extractYouTubeFullDescription(html: String): String {
+        // La descripción completa de YouTube se encuentra en shortDescription dentro de los datos JSON embebidos
+        return extractRegex(html, """"shortDescription":"(.*?)"(?=,"isCrawlable")""")
+            ?: extractRegex(html, """"description":\{"simpleText":"(.*?)"\}""")
+            ?: extractMetaProperty(html, "og:description")
+            ?: ""
+    }
+
+    private fun extractMetaProperty(html: String, property: String): String? {
+        val regex = Regex("""<meta[^>]+property=["']${Regex.escape(property)}["'][^>]+content=["']([^"']+)["']""", RegexOption.IGNORE_CASE)
+        return regex.find(html)?.groupValues?.getOrNull(1)
+    }
+
+    private fun extractMetaName(html: String, name: String): String? {
+        val regex = Regex("""<meta[^>]+name=["']${Regex.escape(name)}["'][^>]+content=["']([^"']+)["']""", RegexOption.IGNORE_CASE)
+        return regex.find(html)?.groupValues?.getOrNull(1)
+    }
+
+    private fun extractRegex(text: String, pattern: String): String? {
+        val regex = Regex(pattern, RegexOption.DOT_MATCHES_ALL)
+        return regex.find(text)?.groupValues?.getOrNull(1)
+    }
+
+    private fun unescapeJsonString(input: String): String {
+        return try {
+            JSONObject("{\"v\":\"$input\"}").optString("v", input)
+        } catch (_: Exception) {
+            input.replace("\\n", "\n").replace("\\\"", "\"").replace("\\\\", "\\")
+        }
+    }
+
+    private fun callGemini(pageInfo: PageInfo, languageCode: String): Recipe {
+        val targetLanguageName = if (languageCode.equals("en", ignoreCase = true)) "English" else "Spanish"
         val prompt = """
-            Sos un asistente de cocina. A partir del siguiente texto extraído de una página web o red social, 
-            identificá si hay una receta y devolvé ÚNICAMENTE un JSON válido con esta estructura (sin texto adicional ni markdown):
+            Sos un asistente de cocina experto.
+            A partir del título y la descripción de un video o publicación de cocina, generá la receta completa y detallada del plato mencionado.
+
+            REGLAS FUNDAMENTALES:
+            1. Si la descripción contiene la receta (ingredientes y pasos), extraela fielmente y ordenala.
+            2. Si la descripción es breve o no lista ingredientes paso a paso (ejemplo: solo saluda o menciona el plato), vos CONOCES la receta tradicional del plato ('${pageInfo.title}'). DEBES inferir y reconstruir la lista completa de ingredientes típicos con sus cantidades estimadas (para un tamaño estándar) y los pasos de preparación paso a paso.
+            3. NUNCA devuelvas listas de ingredientes o pasos vacías. Siempre completá la receta para que el usuario tenga una base útil para cocinar.
+            4. IDIOMA OBLIGATORIO DE SALIDA: Debes escribir ABSOLUTAMENTE TODO el resultado (nombre del plato, cantidades y nombres de ingredientes, y cada paso de preparación) obligatoriamente en $targetLanguageName.
+            5. Devolvé ÚNICAMENTE un JSON válido con esta estructura exacta (sin formato markdown, sin bloques de código ```json):
             {
               "nombre": "Nombre del plato",
-              "porciones": 4,
-              "tiempo_minutos": 30,
+              "porciones": 8,
+              "tiempo_minutos": 45,
               "ingredientes": [
-                {"cantidad": "200 g", "nombre": "Harina"}
+                {"cantidad": "400 g", "nombre": "Harina"}
               ],
               "pasos": [
-                "Mezclar los ingredientes secos.",
-                "Agregar el líquido de a poco."
+                "Paso 1 detallado.",
+                "Paso 2 detallado."
               ]
             }
-            
-            Si el texto no contiene información de receta suficiente, devolvé igual el JSON con los campos que puedas inferir y el resto vacío.
-            
-            Texto a analizar:
-            $pageText
+
+            Datos de la publicación:
+            Título: ${pageInfo.title}
+            Descripción: ${pageInfo.description.take(4000)}
         """.trimIndent()
 
         val requestBody = JSONObject().apply {
@@ -117,13 +184,17 @@ class GeminiLinkExtractor @Inject constructor(
         }.toString()
 
         val request = Request.Builder()
-            .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=$apiKey")
+            .url(geminiUrl)
             .post(requestBody.toRequestBody("application/json".toMediaType()))
             .build()
 
         val responseText = client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw Exception("Error Gemini API: HTTP ${response.code}")
-            response.body?.string() ?: throw Exception("Respuesta vacía de Gemini")
+            val body = response.body?.string() ?: throw Exception("Respuesta vacía de Gemini")
+            if (!response.isSuccessful) {
+                Log.e(TAG, "Error Gemini HTTP ${response.code}: $body")
+                throw Exception("Error Gemini API: HTTP ${response.code}")
+            }
+            body
         }
 
         return parseGeminiResponse(responseText)
@@ -140,7 +211,6 @@ class GeminiLinkExtractor @Inject constructor(
             .getString("text")
             .trim()
 
-        // Limpia el bloque ```json ... ``` que Gemini a veces agrega
         val clean = text
             .removePrefix("```json").removePrefix("```").removeSuffix("```").trim()
 
@@ -150,10 +220,10 @@ class GeminiLinkExtractor @Inject constructor(
 
         return Recipe(
             id = "",
-            name = json.optString("nombre", ""),
+            name = json.optString("nombre", "").ifBlank { "Receta importada" },
             photoUrl = null,
             city = "", country = "",
-            prepTimeMinutes = json.optInt("tiempo_minutos", 0),
+            prepTimeMinutes = json.optInt("tiempo_minutos", 30),
             attempts = 0,
             visibility = Visibility.PRIVATE,
             servings = json.optInt("porciones", 4),
@@ -163,5 +233,9 @@ class GeminiLinkExtractor @Inject constructor(
             },
             steps = (0 until pasos.length()).map { i -> pasos.getString(i) }
         )
+    }
+
+    companion object {
+        private const val TAG = "GeminiLinkExtractor"
     }
 }

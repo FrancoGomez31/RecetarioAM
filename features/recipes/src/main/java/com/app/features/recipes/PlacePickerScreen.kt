@@ -59,10 +59,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
 import com.app.core.domain.Place
 import com.app.core.domain.PlaceType
 import com.app.core.domain.UserLocation
 import com.app.core.domain.distanceKm
+import com.app.core.ui.R
 import com.app.core.ui.RecetarioTheme
 import com.app.core.ui.asMessage
 import com.app.core.ui.formatDistance
@@ -212,22 +214,22 @@ private fun PickerHeader(onBack: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
             }
             Column {
                 Text(
-                    text = "EL LUGAR DETRÁS DE LA RECETA",
+                    text = stringResource(R.string.place_picker_header_badge),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "Elegir origen",
+                    text = stringResource(R.string.place_picker_header_title),
                     style = MaterialTheme.typography.headlineMedium
                 )
             }
         }
         Text(
-            text = "Elegí un país, una ciudad o el restaurante donde nació tu inspiración.",
+            text = stringResource(R.string.place_picker_header_desc),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -245,7 +247,7 @@ private fun ResultsPanel(
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (state.selected != null) {
             TextButton(onClick = actions.onShowMap) {
-                Text("Volver al mapa")
+                Text(stringResource(R.string.place_picker_back_to_map))
             }
         }
 
@@ -264,7 +266,7 @@ private fun ResultsPanel(
             )
 
             state.hasSearched && state.results.isEmpty() -> Text(
-                text = "No encontramos lugares con ese nombre. Probá con otra búsqueda o cambiá de pestaña.",
+                text = stringResource(R.string.place_picker_no_results),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -377,7 +379,7 @@ private fun MapPanel(
 
         if (place == null || pinLatitude == null || pinLongitude == null) {
             Text(
-                text = "Buscá un lugar para ubicarlo en el mapa.",
+                text = stringResource(R.string.place_picker_search_prompt),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -399,7 +401,7 @@ private fun MapPanel(
             shape = RoundedCornerShape(50)
         ) {
             Text(
-                text = if (place != null) "Usar ${place.name} como origen" else "Elegí un lugar",
+                text = if (place != null) stringResource(R.string.place_picker_use_origin, place.name) else stringResource(R.string.place_picker_choose_place),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -473,14 +475,14 @@ private fun SelectedPlaceInfo(
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 Text(
-                    text = "Tu ubicación no define el origen",
+                    text = stringResource(R.string.place_picker_user_loc_title),
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(
                     text = if (user != null) {
-                        "${user.city.ifBlank { "Tu ubicación" }} es tu punto de referencia actual. Podés elegir una cocina de cualquier lugar del mundo."
+                        stringResource(R.string.place_picker_user_loc_desc, user.city.ifBlank { stringResource(R.string.map_legend_user) })
                     } else {
-                        "Tu ubicación solo sirve de referencia para la distancia. Podés elegir una cocina de cualquier lugar del mundo."
+                        stringResource(R.string.place_picker_user_loc_desc_no_loc)
                     },
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -488,7 +490,7 @@ private fun SelectedPlaceInfo(
         }
 
         Text(
-            text = "Mové el mapa para ajustar el pin. También podés mantener presionado un punto.",
+            text = stringResource(R.string.place_picker_move_map_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -588,16 +590,18 @@ private fun OsmMap(
 
 // ------------------------------------------------------------------- Textos
 
+@Composable
 private fun typeTabLabel(type: PlaceType): String = when (type) {
-    PlaceType.COUNTRY -> "País"
-    PlaceType.CITY -> "Ciudad"
-    PlaceType.RESTAURANT -> "Restaurante"
+    PlaceType.COUNTRY -> stringResource(R.string.place_picker_type_country)
+    PlaceType.CITY -> stringResource(R.string.place_picker_type_city)
+    PlaceType.RESTAURANT -> stringResource(R.string.place_picker_type_restaurant)
 }
 
+@Composable
 private fun searchPlaceholder(type: PlaceType): String = when (type) {
-    PlaceType.COUNTRY -> "Buscar un país"
-    PlaceType.CITY -> "Buscar una ciudad"
-    PlaceType.RESTAURANT -> "Buscar un restaurante"
+    PlaceType.COUNTRY -> stringResource(R.string.place_picker_search_country)
+    PlaceType.CITY -> stringResource(R.string.place_picker_search_city)
+    PlaceType.RESTAURANT -> stringResource(R.string.place_picker_search_restaurant)
 }
 
 private fun placeTitle(place: Place): String = when (place.type) {

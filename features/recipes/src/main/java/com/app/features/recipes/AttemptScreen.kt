@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,6 +61,7 @@ import com.app.core.domain.Attempt
 import com.app.core.domain.AttemptPhoto
 import com.app.core.domain.Recipe
 import com.app.core.domain.Visibility
+import com.app.core.ui.R
 import com.app.core.ui.RecetarioTheme
 import com.app.core.ui.asMessage
 import java.io.File
@@ -174,12 +176,12 @@ fun AttemptScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = state.error?.asMessage() ?: "No pudimos cargar la receta.",
+                    text = state.error?.asMessage() ?: stringResource(R.string.detail_load_error),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium
                 )
                 OutlinedButton(onClick = actions.onBack) {
-                    Text("Volver")
+                    Text(stringResource(R.string.common_back))
                 }
             }
         }
@@ -218,19 +220,19 @@ private fun AttemptContent(
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(text = "Nota del intento", style = MaterialTheme.typography.headlineSmall)
+            Text(text = stringResource(R.string.attempt_note_title), style = MaterialTheme.typography.headlineSmall)
             OutlinedTextField(
                 value = state.note,
                 onValueChange = actions.onNoteChange,
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3,
-                placeholder = { Text("¿Qué cambiaste? ¿Cómo salió?") },
+                placeholder = { Text(stringResource(R.string.attempt_note_placeholder)) },
                 shape = RoundedCornerShape(12.dp)
             )
         }
 
         Text(
-            text = "Tus fotos de progreso son privadas, aunque la receta sea pública.",
+            text = stringResource(R.string.attempt_privacy_notice),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -260,9 +262,9 @@ private fun AttemptContent(
             } else {
                 Text(
                     text = when {
-                        state.pendingPhotoUri != null -> "Guardar foto en el intento ${state.attemptNumber}"
-                        state.canSave -> "Guardar nota del intento ${state.attemptNumber}"
-                        else -> "Elegí una foto para guardar"
+                        state.pendingPhotoUri != null -> stringResource(R.string.attempt_btn_save_photo, state.attemptNumber)
+                        state.canSave -> stringResource(R.string.attempt_btn_save_note, state.attemptNumber)
+                        else -> stringResource(R.string.attempt_btn_choose_photo)
                     }
                 )
             }
@@ -279,7 +281,7 @@ private fun AttemptHeader(
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
             }
             Column {
                 Text(
@@ -289,16 +291,16 @@ private fun AttemptHeader(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(text = "Registrar mi intento", style = MaterialTheme.typography.headlineMedium)
+                Text(text = stringResource(R.string.attempt_title), style = MaterialTheme.typography.headlineMedium)
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             StatusPill(
-                text = "Intento ${state.attemptNumber} · Hoy",
+                text = stringResource(R.string.attempt_today, state.attemptNumber),
                 container = MaterialTheme.colorScheme.primaryContainer
             )
             StatusPill(
-                text = if (state.currentAttempt == null) "Sin guardar" else "Guardado",
+                text = if (state.currentAttempt == null) stringResource(R.string.attempt_not_saved) else stringResource(R.string.attempt_saved),
                 container = MaterialTheme.colorScheme.secondaryContainer
             )
         }
@@ -312,7 +314,7 @@ private fun StepSelector(
     onSelected: (Int) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(text = "Asociar foto a un paso", style = MaterialTheme.typography.headlineSmall)
+        Text(text = stringResource(R.string.attempt_step_assoc), style = MaterialTheme.typography.headlineSmall)
 
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
@@ -322,13 +324,13 @@ private fun StepSelector(
                 FilterChip(
                     selected = selected == index,
                     onClick = { onSelected(index) },
-                    label = { Text("Paso ${index + 1}") }
+                    label = { Text(stringResource(R.string.attempt_step_label, index + 1)) }
                 )
             }
         }
 
         Text(
-            text = "Paso ${selected + 1} · ${recipe.steps.getOrElse(selected) { "" }}",
+            text = "${stringResource(R.string.attempt_step_label, selected + 1)} · ${recipe.steps.getOrElse(selected) { "" }}",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 3,
@@ -346,7 +348,7 @@ private fun PhotoReviewBlock(
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(
-            text = if (pending != null) "Foto en revisión" else "Foto del paso",
+            text = if (pending != null) stringResource(R.string.attempt_photo_review) else stringResource(R.string.attempt_photo_step),
             style = MaterialTheme.typography.headlineSmall
         )
 
@@ -361,7 +363,7 @@ private fun PhotoReviewBlock(
             if (pending != null) {
                 AsyncImage(
                     model = pending,
-                    contentDescription = "Foto en revisión",
+                    contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -376,7 +378,7 @@ private fun PhotoReviewBlock(
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "Todavía no elegiste una foto",
+                        text = stringResource(R.string.attempt_no_photo_chosen),
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -389,27 +391,19 @@ private fun PhotoReviewBlock(
                     onClick = actions.onTakePhoto,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(50)
-                ) { Text("Volver a tomar") }
+                ) { Text(stringResource(R.string.attempt_retake_photo)) }
             } else {
                 Button(
                     onClick = actions.onTakePhoto,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(50)
-                ) { Text("Tomar foto") }
+                ) { Text(stringResource(R.string.attempt_take_photo)) }
             }
             OutlinedButton(
                 onClick = actions.onPickFromGallery,
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(50)
-            ) { Text("Galería") }
-        }
-
-        if (pending != null && state.pendingTakenAtMillis != null) {
-            Text(
-                text = "${formatFull(state.pendingTakenAtMillis)} · La foto se guardará dentro de esta receta, no como portada.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            ) { Text(stringResource(R.string.attempt_gallery)) }
         }
     }
 }
@@ -418,17 +412,17 @@ private fun PhotoReviewBlock(
 @Composable
 private fun ComparisonBlock(state: AttemptUiState) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(text = "El mismo paso, otro intento", style = MaterialTheme.typography.headlineSmall)
+        Text(text = stringResource(R.string.attempt_comparison_title), style = MaterialTheme.typography.headlineSmall)
 
         if (state.previousAttempts.isEmpty()) {
             Text(
-                text = "Es tu primer intento de esta receta: todavía no hay con qué comparar.",
+                text = stringResource(R.string.attempt_first_attempt),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         } else {
             Text(
-                text = "Paso ${state.selectedStep + 1} · Compará forma y textura con tus intentos anteriores.",
+                text = stringResource(R.string.attempt_comparison_hint, state.selectedStep + 1),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -465,13 +459,13 @@ private fun ComparisonCard(
             if (photo != null) {
                 AsyncImage(
                     model = photo.uri,
-                    contentDescription = "Intento ${attempt.number}, paso ${stepIndex + 1}",
+                    contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
                 Text(
-                    text = "Sin foto en este paso",
+                    text = stringResource(R.string.attempt_no_photo_step),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(8.dp)
@@ -479,7 +473,7 @@ private fun ComparisonCard(
             }
         }
         Text(
-            text = "Intento ${attempt.number} · ${formatDay(attempt.createdAtMillis)}",
+            text = stringResource(R.string.detail_attempt_number, attempt.number, formatDay(attempt.createdAtMillis)),
             style = MaterialTheme.typography.labelLarge
         )
         if (attempt.note.isNotBlank()) {
@@ -502,12 +496,12 @@ private fun SavedPhotosBlock(
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "Fotos de este intento",
+                text = stringResource(R.string.attempt_saved_photos_title),
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = if (attempt.photos.size == 1) "1 guardada" else "${attempt.photos.size} guardadas",
+                text = if (attempt.photos.size == 1) stringResource(R.string.detail_one_photo) else stringResource(R.string.detail_many_photos, attempt.photos.size),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -533,7 +527,7 @@ private fun SavedPhotosBlock(
                 ) {
                     Icon(Icons.Filled.Add, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     Text(
-                        text = "Agregar otra foto",
+                        text = stringResource(R.string.attempt_add_another_photo),
                         style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.padding(horizontal = 4.dp)
                     )
