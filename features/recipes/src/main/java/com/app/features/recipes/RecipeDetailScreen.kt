@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +22,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Notifications
@@ -92,7 +97,8 @@ data class RecipeDetailActions(
     val onEdit: () -> Unit = {},
     val onDeleteClick: () -> Unit = {},
     val onRegisterAttempt: () -> Unit = {},
-    val onToggleReminder: (Long?) -> Unit = {}
+    val onToggleReminder: (Long?) -> Unit = {},
+    val onSaveCopy: () -> Unit = {}
 )
 
 @Composable
@@ -116,7 +122,8 @@ fun RecipeDetailRoute(
             onEdit = { state.recipe?.let { onEdit(it.id) } },
             onDeleteClick = { showDeleteDialog = true },
             onRegisterAttempt = { state.recipe?.let { onRegisterAttempt(it.id) } },
-            onToggleReminder = viewModel::onToggleReminder
+            onToggleReminder = viewModel::onToggleReminder,
+            onSaveCopy = viewModel::onSaveCopy
         )
     )
 
@@ -240,6 +247,42 @@ private fun RecipeDetailContent(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Pill(text = "${recipe.prepTimeMinutes} min", container = MaterialTheme.colorScheme.surface, bordered = true)
                 Pill(text = servingsText(recipe.servings), container = MaterialTheme.colorScheme.surface, bordered = true)
+            }
+
+            if (recipe.id.startsWith("comm_") || recipe.visibility == Visibility.PUBLIC) {
+                Spacer(Modifier.height(4.dp))
+                Button(
+                    onClick = actions.onSaveCopy,
+                    enabled = !state.isSavingCopy && !state.copySaved,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    if (state.isSavingCopy) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else if (state.copySaved) {
+                        Icon(
+                            imageVector = Icons.Filled.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.detail_copy_saved_success))
+                    } else {
+                        Icon(
+                            imageVector = Icons.Outlined.BookmarkBorder,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.detail_btn_save_copy))
+                    }
+                }
             }
         }
 
