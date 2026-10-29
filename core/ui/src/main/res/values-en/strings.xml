@@ -111,6 +111,7 @@
     <string name="detail_visibility_private">Private</string>
     <string name="detail_own_recipe">Own recipe</string>
     <string name="detail_btn_save_copy">Save to my recipes</string>
+    <string name="detail_already_saved">Already in your recipes</string>
     <string name="detail_copy_saved_success">Recipe saved to your notebook!</string>
     <string name="detail_ingredients_title">Ingredients</string>
     <string name="detail_steps_title">Step by step</string>

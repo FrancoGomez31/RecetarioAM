@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.app.core.domain.usecase.GetRecipesUseCase
+import com.app.core.domain.Recipe
 
 @HiltViewModel
 class RecipeDetailViewModel @Inject constructor(
@@ -25,7 +27,8 @@ class RecipeDetailViewModel @Inject constructor(
     private val getUserLocationUseCase: GetUserLocationUseCase,
     private val deleteRecipeUseCase: DeleteRecipeUseCase,
     private val setRecipeReminderUseCase: SetRecipeReminderUseCase,
-    private val saveRecipeUseCase: SaveRecipeUseCase
+    private val saveRecipeUseCase: SaveRecipeUseCase,
+    private val getRecipesUseCase: GetRecipesUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RecipeDetailUiState())
@@ -40,8 +43,9 @@ class RecipeDetailViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = it.recipe == null, error = null, copySaved = false) }
         viewModelScope.launch {
             when (val result = getRecipeUseCase(recipeId)) {
-                is AppResult.Success -> _uiState.update {
-                    it.copy(recipe = result.data, isLoading = false)
+                is AppResult.Success -> {
+                    _uiState.update { it.copy(recipe = result.data, isLoading = false) }
+                    updateAlreadySaved(result.data)
                 }
                 is AppResult.Error -> _uiState.update {
                     it.copy(isLoading = false, error = result.error)
@@ -60,6 +64,20 @@ class RecipeDetailViewModel @Inject constructor(
             _uiState.update { it.copy(userLocation = location) }
         }
     }
+    /**
+     * Una receta de Explorar (o pública) cuenta como "ya guardada" si el usuario tiene otra
+     * receta propia con el mismo nombre y país. Si la borra de Mis recetas, vuelve a poder guardarla.
+     */
+    private suspend fun updateAlreadySaved(recipe: Recipe) {
+        if (!recipe.id.startsWith("comm_") && recipe.visibility != Visibility.PUBLIC) return
+        val mine = (getRecipesUseCase() as? AppResult.Success)?.data ?: return
+        val saved = mine.any {
+            it.id != recipe.id &&
+                    it.name.trim().equals(recipe.name.trim(), ignoreCase = true) &&
+                    it.country.trim().equals(recipe.country.trim(), ignoreCase = true)
+        }
+        _uiState.update { it.copy(alreadySaved = saved) }
+    }
 
     fun onSaveCopy() {
         val recipe = _uiState.value.recipe ?: return
@@ -75,8 +93,7 @@ class RecipeDetailViewModel @Inject constructor(
             when (val result = saveRecipeUseCase(copyToSave)) {
                 is AppResult.Success -> {
                     _uiState.update {
-                        it.copy(isSavingCopy = false, copySaved = true)
-                    }
+                        it.copy(isSavingCopy = false, copySaved = true, alreadySaved = true)                    }
                 }
                 is AppResult.Error -> {
                     _uiState.update {

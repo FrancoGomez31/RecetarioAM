@@ -112,6 +112,7 @@
     <string name="detail_own_recipe">Receta propia</string>
     <string name="detail_btn_save_copy">Guardar en mis recetas</string>
     <string name="detail_copy_saved_success">¡Receta guardada en tu cuaderno!</string>
+    <string name="detail_already_saved">Ya está en tus recetas</string>
     <string name="detail_ingredients_title">Ingredientes</string>
     <string name="detail_steps_title">Paso a paso</string>
     <string name="detail_steps_count_one">1 paso</string>

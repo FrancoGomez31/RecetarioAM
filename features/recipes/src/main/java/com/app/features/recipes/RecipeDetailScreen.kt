@@ -22,14 +22,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.NotificationsActive
-import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -253,8 +251,7 @@ private fun RecipeDetailContent(
                 Spacer(Modifier.height(4.dp))
                 Button(
                     onClick = actions.onSaveCopy,
-                    enabled = !state.isSavingCopy && !state.copySaved,
-                    modifier = Modifier
+                    enabled = !state.isSavingCopy && !state.copySaved && !state.alreadySaved,                    modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
                     shape = RoundedCornerShape(12.dp)
@@ -265,15 +262,18 @@ private fun RecipeDetailContent(
                             color = MaterialTheme.colorScheme.onPrimary,
                             strokeWidth = 2.dp
                         )
-                    } else if (state.copySaved) {
-                        Icon(
+                    } else if (state.copySaved || state.alreadySaved) {                        Icon(
                             imageVector = Icons.Filled.Check,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.detail_copy_saved_success))
-                    } else {
+                        Text(
+                            stringResource(
+                                if (state.copySaved) R.string.detail_copy_saved_success
+                                else R.string.detail_already_saved
+                            )
+                        )                    } else {
                         Icon(
                             imageVector = Icons.Outlined.BookmarkBorder,
                             contentDescription = null,
