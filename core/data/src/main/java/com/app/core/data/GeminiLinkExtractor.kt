@@ -62,7 +62,7 @@ class GeminiLinkExtractor @Inject constructor(
         }
     }
 
-    private data class PageInfo(val title: String, val description: String)
+    private data class PageInfo(val title: String, val description: String, val imageUrl: String?)
 
     private fun fetchPageInfo(url: String): PageInfo {
         val request = Request.Builder()
@@ -94,6 +94,16 @@ class GeminiLinkExtractor @Inject constructor(
                 ?: ""
         }
 
+        val imageUrl = if (isYouTube) {
+            extractYouTubeThumbnail(url, html)
+        } else {
+            extractMetaProperty(html, "og:image")
+                ?: extractMetaProperty(html, "og:image:url")
+                ?: extractMetaName(html, "twitter:image")
+                ?: extractRegex(html, """<link[^>]+rel=["']image_src["'][^>]+href=["']([^"']+)["']""")
+                ?: extractRegex(html, """<meta[^>]+itemprop=["']image["'][^>]+content=["']([^"']+)["']""")
+        }
+
         val cleanTitle = title.replace(" - YouTube", "").trim()
         val cleanDesc = unescapeJsonString(description).trim()
 
@@ -101,33 +111,51 @@ class GeminiLinkExtractor @Inject constructor(
             throw Exception("No se pudo obtener información del link")
         }
 
-        Log.d(TAG, "Info extraída -> Título: '$cleanTitle', Longitud desc: ${cleanDesc.length}")
-        return PageInfo(title = cleanTitle, description = cleanDesc)
+        Log.d(TAG, "Info extraída -> Título: '$cleanTitle', Longitud desc: ${cleanDesc.length}, Image: $imageUrl")
+        return PageInfo(title = cleanTitle, description = cleanDesc, imageUrl = imageUrl)
+    }
+
+    private fun extractYouTubeThumbnail(url: String, html: String): String? {
+        return extractMetaProperty(html, "og:image")
+            ?: extractMetaName(html, "twitter:image")
+            ?: run {
+                val videoIdRegex = Regex("""(?:v=|/shorts/|youtu\.be/|/v/|/embed/|watch\?v=)([a-zA-Z0-9_-]{11})""")
+                val videoId = videoIdRegex.find(url)?.groupValues?.getOrNull(1)
+                    ?: extractRegex(html, """"videoId":"([a-zA-Z0-9_-]{11})"""")
+                if (videoId != null) "https://i.ytimg.com/vi/$videoId/hqdefault.jpg" else null
+            }
     }
 
     private fun extractYouTubeTitle(html: String): String {
-        return extractRegex(html, """"title":"(.*?)"(?=,"lengthSeconds")""")
+        return extractMetaProperty(html, "og:title")
+            ?: extractMetaName(html, "title")
+            ?: extractRegex(html, """"title":"(.*?)"(?=,"lengthSeconds")""")
             ?: extractRegex(html, """<title[^>]*>([^<]+)</title>""")
-            ?: extractMetaProperty(html, "og:title")
             ?: ""
     }
 
     private fun extractYouTubeFullDescription(html: String): String {
-        // La descripción completa de YouTube se encuentra en shortDescription dentro de los datos JSON embebidos
-        return extractRegex(html, """"shortDescription":"(.*?)"(?=,"isCrawlable")""")
+        return extractMetaProperty(html, "og:description")
+            ?: extractMetaName(html, "description")
+            ?: extractRegex(html, """"shortDescription":"(.*?)"(?=,"isCrawlable")""")
             ?: extractRegex(html, """"description":\{"simpleText":"(.*?)"\}""")
-            ?: extractMetaProperty(html, "og:description")
             ?: ""
     }
 
     private fun extractMetaProperty(html: String, property: String): String? {
-        val regex = Regex("""<meta[^>]+property=["']${Regex.escape(property)}["'][^>]+content=["']([^"']+)["']""", RegexOption.IGNORE_CASE)
-        return regex.find(html)?.groupValues?.getOrNull(1)
+        val p = Regex.escape(property)
+        val regex1 = Regex("""<meta[^>]+property=["']$p["'][^>]+content=["']([^"']+)["']""", RegexOption.IGNORE_CASE)
+        val regex2 = Regex("""<meta[^>]+content=["']([^"']+)["'][^>]+property=["']$p["']""", RegexOption.IGNORE_CASE)
+        return regex1.find(html)?.groupValues?.getOrNull(1)
+            ?: regex2.find(html)?.groupValues?.getOrNull(1)
     }
 
     private fun extractMetaName(html: String, name: String): String? {
-        val regex = Regex("""<meta[^>]+name=["']${Regex.escape(name)}["'][^>]+content=["']([^"']+)["']""", RegexOption.IGNORE_CASE)
-        return regex.find(html)?.groupValues?.getOrNull(1)
+        val n = Regex.escape(name)
+        val regex1 = Regex("""<meta[^>]+name=["']$n["'][^>]+content=["']([^"']+)["']""", RegexOption.IGNORE_CASE)
+        val regex2 = Regex("""<meta[^>]+content=["']([^"']+)["'][^>]+name=["']$n["']""", RegexOption.IGNORE_CASE)
+        return regex1.find(html)?.groupValues?.getOrNull(1)
+            ?: regex2.find(html)?.groupValues?.getOrNull(1)
     }
 
     private fun extractRegex(text: String, pattern: String): String? {
@@ -153,12 +181,18 @@ class GeminiLinkExtractor @Inject constructor(
             1. Si la descripción contiene la receta (ingredientes y pasos), extraela fielmente y ordenala.
             2. Si la descripción es breve o no lista ingredientes paso a paso (ejemplo: solo saluda o menciona el plato), vos CONOCES la receta tradicional del plato ('${pageInfo.title}'). DEBES inferir y reconstruir la lista completa de ingredientes típicos con sus cantidades estimadas (para un tamaño estándar) y los pasos de preparación paso a paso.
             3. NUNCA devuelvas listas de ingredientes o pasos vacías. Siempre completá la receta para que el usuario tenga una base útil para cocinar.
-            4. IDIOMA OBLIGATORIO DE SALIDA: Debes escribir ABSOLUTAMENTE TODO el resultado (nombre del plato, cantidades y nombres de ingredientes, y cada paso de preparación) obligatoriamente en $targetLanguageName.
-            5. Devolvé ÚNICAMENTE un JSON válido con esta estructura exacta (sin formato markdown, sin bloques de código ```json):
+            4. LUGAR DE ORIGEN: Identificá la ciudad y país de origen de la receta. Si la publicación menciona una ubicación o restaurante específico, usalos. Si NO se menciona ubicación en el texto, investigá e INFIERE la ciudad y el país tradicionales de origen de ese plato (ejemplo: Tacos al Pastor -> Ciudad de México, México; Paella -> Valencia, España; Pizza Margherita -> Nápoles, Italia; Asado -> Buenos Aires, Argentina). NUNCA dejes el país vacío.
+            5. IDIOMA OBLIGATORIO DE SALIDA: Debes escribir ABSOLUTAMENTE TODO el resultado (nombre del plato, descripción, cantidades y nombres de ingredientes, cada paso de preparación, ciudad y país) obligatoriamente en $targetLanguageName.
+            6. Devolvé ÚNICAMENTE un JSON válido con esta estructura exacta (sin formato markdown, sin bloques de código ```json):
             {
               "nombre": "Nombre del plato",
-              "porciones": 8,
+              "descripcion": "Resumen explicativo de la receta",
+              "foto_url": "",
+              "porciones": 4,
               "tiempo_minutos": 45,
+              "ciudad": "Ciudad de origen",
+              "pais": "País de origen",
+              "restaurante": "",
               "ingredientes": [
                 {"cantidad": "400 g", "nombre": "Harina"}
               ],
@@ -197,10 +231,10 @@ class GeminiLinkExtractor @Inject constructor(
             body
         }
 
-        return parseGeminiResponse(responseText)
+        return parseGeminiResponse(responseText, pageInfo.imageUrl)
     }
 
-    private fun parseGeminiResponse(rawResponse: String): Recipe {
+    private fun parseGeminiResponse(rawResponse: String, imageUrl: String?): Recipe {
         val root = JSONObject(rawResponse)
         val text = root
             .getJSONArray("candidates")
@@ -218,11 +252,31 @@ class GeminiLinkExtractor @Inject constructor(
         val ingredientes = json.optJSONArray("ingredientes") ?: JSONArray()
         val pasos = json.optJSONArray("pasos") ?: JSONArray()
 
+        val city = json.optString("ciudad", "").trim()
+        val country = json.optString("pais", "").trim().ifBlank { "Internacional" }
+        val restaurant = json.optString("restaurante", "").trim()
+        val description = json.optString("descripcion", "").trim()
+
+        val extractedPhoto = json.optString("foto_url", "").trim().takeIf { it.startsWith("http") } ?: imageUrl
+        val photoUrl = if (extractedPhoto.isNullOrBlank()) {
+            FoodPhotoHelper.getFoodPhotoUrl(
+                title = json.optString("nombre", ""),
+                ingredients = (0 until ingredientes.length()).map { i ->
+                    ingredientes.optJSONObject(i)?.optString("nombre", "").orEmpty()
+                }
+            )
+        } else {
+            extractedPhoto
+        }
+
         return Recipe(
             id = "",
             name = json.optString("nombre", "").ifBlank { "Receta importada" },
-            photoUrl = null,
-            city = "", country = "",
+            description = description,
+            photoUrl = photoUrl,
+            city = city,
+            country = country,
+            restaurant = restaurant,
             prepTimeMinutes = json.optInt("tiempo_minutos", 30),
             attempts = 0,
             visibility = Visibility.PRIVATE,

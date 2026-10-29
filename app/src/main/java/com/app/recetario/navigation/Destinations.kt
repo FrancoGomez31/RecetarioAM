@@ -31,7 +31,14 @@ data class RecipeFormDestination(
     // Campos pre-llenados cuando viene del flujo de importar por link
     val prefillName: String = "",
     val prefillServings: String = "",
-    val prefillPrepTime: String = ""
+    val prefillPrepTime: String = "",
+    val prefillDescription: String = "",
+    val prefillCity: String = "",
+    val prefillCountry: String = "",
+    val prefillRestaurant: String = "",
+    val prefillPhotoUrl: String? = null,
+    val prefillIngredients: List<String> = emptyList(),
+    val prefillSteps: List<String> = emptyList()
 ) : NavKey
 
 /** Registrar un intento de cocinar una receta: fotos por paso, comparación y nota. */

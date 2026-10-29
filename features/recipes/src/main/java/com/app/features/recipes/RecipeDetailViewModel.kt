@@ -3,10 +3,12 @@ package com.app.features.recipes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.core.domain.AppResult
+import com.app.core.domain.Visibility
 import com.app.core.domain.usecase.DeleteRecipeUseCase
 import com.app.core.domain.usecase.GetAttemptsUseCase
 import com.app.core.domain.usecase.GetRecipeUseCase
 import com.app.core.domain.usecase.GetUserLocationUseCase
+import com.app.core.domain.usecase.SaveRecipeUseCase
 import com.app.core.domain.usecase.SetRecipeReminderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -22,7 +24,8 @@ class RecipeDetailViewModel @Inject constructor(
     private val getAttemptsUseCase: GetAttemptsUseCase,
     private val getUserLocationUseCase: GetUserLocationUseCase,
     private val deleteRecipeUseCase: DeleteRecipeUseCase,
-    private val setRecipeReminderUseCase: SetRecipeReminderUseCase
+    private val setRecipeReminderUseCase: SetRecipeReminderUseCase,
+    private val saveRecipeUseCase: SaveRecipeUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RecipeDetailUiState())
@@ -34,7 +37,7 @@ class RecipeDetailViewModel @Inject constructor(
      * con los datos ya a la vista, se actualizan sin parpadeo.
      */
     fun load(recipeId: String) {
-        _uiState.update { it.copy(isLoading = it.recipe == null, error = null) }
+        _uiState.update { it.copy(isLoading = it.recipe == null, error = null, copySaved = false) }
         viewModelScope.launch {
             when (val result = getRecipeUseCase(recipeId)) {
                 is AppResult.Success -> _uiState.update {
@@ -55,6 +58,32 @@ class RecipeDetailViewModel @Inject constructor(
             // Va al final para que la receta aparezca sin esperar al GPS.
             val location = getUserLocationUseCase()
             _uiState.update { it.copy(userLocation = location) }
+        }
+    }
+
+    fun onSaveCopy() {
+        val recipe = _uiState.value.recipe ?: return
+        if (_uiState.value.isSavingCopy) return
+
+        _uiState.update { it.copy(isSavingCopy = true, error = null) }
+        viewModelScope.launch {
+            // Crea una copia personal de la receta para el usuario
+            val copyToSave = recipe.copy(
+                id = "",
+                visibility = Visibility.PRIVATE
+            )
+            when (val result = saveRecipeUseCase(copyToSave)) {
+                is AppResult.Success -> {
+                    _uiState.update {
+                        it.copy(isSavingCopy = false, copySaved = true)
+                    }
+                }
+                is AppResult.Error -> {
+                    _uiState.update {
+                        it.copy(isSavingCopy = false, error = result.error)
+                    }
+                }
+            }
         }
     }
 

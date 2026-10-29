@@ -48,14 +48,33 @@ class RecipeFormViewModel @Inject constructor(
      * Pre-llena el formulario con datos extraídos por IA (flujo "Por link").
      * Solo actúa si todavía no se inicializó.
      */
-    fun prefill(name: String, servings: String, prepTime: String) {
+    fun prefill(
+        name: String,
+        servings: String,
+        prepTime: String,
+        description: String = "",
+        city: String = "",
+        country: String = "",
+        restaurant: String = "",
+        photoUrl: String? = null,
+        ingredients: List<IngredientInput> = emptyList(),
+        steps: List<StepInput> = emptyList()
+    ) {
         if (started) return
         started = true
         _uiState.update { state ->
             state.copy(
                 name = name,
+                description = description,
                 servings = servings.ifBlank { "4" },
-                prepTime = prepTime
+                prepTime = prepTime,
+                city = city,
+                country = country,
+                restaurant = restaurant,
+                coverUri = photoUrl,
+                coverIsNew = false,
+                ingredients = ingredients.ifEmpty { listOf(IngredientInput(newRowId())) },
+                steps = steps.ifEmpty { listOf(StepInput(newRowId())) }
             )
         }
     }
