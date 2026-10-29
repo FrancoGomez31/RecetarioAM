@@ -281,4 +281,22 @@
     <string name="auth_btn_login">Sign in to my recipe book</string>
     <string name="auth_btn_register">Create my account</string>
     <string name="auth_terms_notice">By continuing you accept Terms and Privacy Policy. Your recipes are private by default.</string>
+    <!-- Achievements -->
+    <string name="ach_title">My achievements</string>
+    <string name="ach_subtitle">Every recipe and every attempt counts.</string>
+    <string name="ach_summary_count">%1$d of %2$d</string>
+    <string name="ach_summary_label">achievements unlocked</string>
+    <string name="ach_notifications_text">Turn on notifications so we can tell you when you earn an achievement.</string>
+    <string name="ach_notifications_button">Turn on</string>
+    <string name="ach_unlocked">Unlocked</string>
+    <string name="ach_first_recipe_title">First recipe</string>
+    <string name="ach_first_recipe_desc">Save your first recipe.</string>
+    <string name="ach_full_notebook_title">A full notebook</string>
+    <string name="ach_full_notebook_desc">Save 10 recipes.</string>
+    <string name="ach_world_kitchens_title">World kitchens</string>
+    <string name="ach_world_kitchens_desc">Save recipes from 5 different countries.</string>
+    <string name="ach_first_attempt_title">Hands on</string>
+    <string name="ach_first_attempt_desc">Log your first cooking attempt.</string>
+    <string name="ach_learning_title">Learning by cooking</string>
+    <string name="ach_learning_desc">Log 10 cooking attempts.</string>
 </resources>

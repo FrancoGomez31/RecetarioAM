@@ -281,4 +281,22 @@
     <string name="auth_btn_login">Entrar a mi recetario</string>
     <string name="auth_btn_register">Crear mi cuenta</string>
     <string name="auth_terms_notice">Al continuar aceptás los Términos y la Política de privacidad. Tus recetas son privadas por defecto.</string>
+    <!-- Logros -->
+    <string name="ach_title">Mis logros</string>
+    <string name="ach_subtitle">Cada receta y cada intento suma.</string>
+    <string name="ach_summary_count">%1$d de %2$d</string>
+    <string name="ach_summary_label">logros desbloqueados</string>
+    <string name="ach_notifications_text">Activá las notificaciones para que te avisemos cuando consigas un logro.</string>
+    <string name="ach_notifications_button">Activar</string>
+    <string name="ach_unlocked">Conseguido</string>
+    <string name="ach_first_recipe_title">Primera receta</string>
+    <string name="ach_first_recipe_desc">Guardá tu primera receta.</string>
+    <string name="ach_full_notebook_title">Un cuaderno lleno</string>
+    <string name="ach_full_notebook_desc">Guardá 10 recetas.</string>
+    <string name="ach_world_kitchens_title">Cocinas del mundo</string>
+    <string name="ach_world_kitchens_desc">Guardá recetas de 5 países distintos.</string>
+    <string name="ach_first_attempt_title">Manos a la obra</string>
+    <string name="ach_first_attempt_desc">Registrá tu primer intento de cocina.</string>
+    <string name="ach_learning_title">Aprender cocinando</string>
+    <string name="ach_learning_desc">Registrá 10 intentos de cocina.</string>
 </resources>

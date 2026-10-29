@@ -42,4 +42,10 @@ enum class TopLevelDestination(
         unselectedIcon = Icons.Outlined.Explore,
         label = R.string.tab_explore
     ),
+    ACHIEVEMENTS(
+        startKey = AchievementsDestination,
+        selectedIcon = Icons.Filled.WorkspacePremium,
+        unselectedIcon = Icons.Outlined.WorkspacePremium,
+        label = R.string.tab_achievements
+    )
 }

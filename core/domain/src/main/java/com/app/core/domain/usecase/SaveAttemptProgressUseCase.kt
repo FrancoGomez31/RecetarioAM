@@ -14,13 +14,15 @@ import javax.inject.Inject
 /**
  * Guarda el avance de un intento: una foto nueva (opcional) y la nota.
  *
- * El intento se crea al guardar por primera vez ([current] == null); a partir de ahí cada
+ * El intento se crea al guardar por primera vez (current == null); a partir de ahí cada
  * llamada lo va completando. Al crearlo se suma uno al contador de intentos de la receta.
  */
 class SaveAttemptProgressUseCase @Inject constructor(
     private val attemptRepository: AttemptRepository,
     private val photoStorage: PhotoStorage,
-    private val recipeRepository: RecipeRepository
+    private val recipeRepository: RecipeRepository,
+    private val getAchievements: GetAchievementsUseCase
+
 ) {
     suspend operator fun invoke(
         recipeId: String,
@@ -80,6 +82,8 @@ class SaveAttemptProgressUseCase @Inject constructor(
                 }
                 is AppResult.Error -> return AppResult.Error(recipeResult.error)
             }
+            // Si con este intento se desbloqueó un logro, se avisa con una notificación
+            getAchievements()
         }
 
         return AppResult.Success(saved)

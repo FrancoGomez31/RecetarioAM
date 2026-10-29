@@ -26,6 +26,8 @@ import com.app.features.recipes.RecipeFormRoute
 import com.app.features.recipes.RecipeFormViewModel
 import com.app.features.recipes.RecipesRoute
 import com.app.features.recipes.RecipesViewModel
+import com.app.features.recipes.achievements.AchievementsRoute
+import com.app.features.recipes.achievements.AchievementsViewModel
 import com.app.features.recipes.explore.ExploreRoute
 import com.app.features.recipes.explore.ExploreViewModel
 import com.app.recetario.ui.ComingSoonScreen
@@ -86,6 +88,12 @@ fun AppNavDisplay(
                 viewModel = viewModel,
                 onRecipeClick = { id -> navigationState.navigate(RecipeDetailDestination(id)) }
             )
+        }
+
+        entry<AchievementsDestination> {
+            val viewModel: AchievementsViewModel = hiltViewModel()
+            LaunchedEffect(Unit) { viewModel.load() }
+            AchievementsRoute(viewModel = viewModel)
         }
 
         entry<AccountDestination> {
