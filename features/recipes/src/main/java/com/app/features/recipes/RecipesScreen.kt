@@ -254,23 +254,6 @@ private fun RecipeCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Miniatura: la portada de la receta si la tiene; si no, el recuadro de color de siempre.
-            Box(
-                modifier = Modifier
-                    .size(72.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-            ) {
-                if (recipe.photoUrl != null) {
-                    AsyncImage(
-                        model = recipe.photoUrl,
-                        contentDescription = "Portada de ${recipe.name}",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-            }
-
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(2.dp)

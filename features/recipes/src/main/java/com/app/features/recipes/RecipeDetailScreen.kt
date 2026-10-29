@@ -207,31 +207,19 @@ private fun RecipeDetailContent(
             )
         }
 
-        // Portada: la foto de la receta si la tiene (es opcional); si no, un recuadro con un ícono.
-        // clip y no solo background: así la foto también respeta las esquinas redondeadas.
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(180.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
+        // Título del plato: grande y sobre un recuadro de color, así se distingue sin foto de portada.
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.primaryContainer
         ) {
-            if (recipe.photoUrl != null) {
-                AsyncImage(
-                    model = recipe.photoUrl,
-                    contentDescription = "Portada de ${recipe.name}",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Outlined.Restaurant,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(36.dp)
-                )
-            }
+            Text(
+                text = recipe.name,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 28.dp),
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -242,7 +230,6 @@ private fun RecipeDetailContent(
                 )
                 Pill(text = stringResource(R.string.detail_own_recipe), container = MaterialTheme.colorScheme.primaryContainer)
             }
-            Text(text = recipe.name, style = MaterialTheme.typography.headlineMedium)
             if (recipe.description.isNotBlank()) {
                 Text(
                     text = recipe.description,
