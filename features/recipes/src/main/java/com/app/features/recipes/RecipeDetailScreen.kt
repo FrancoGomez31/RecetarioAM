@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,11 +22,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.NotificationsActive
-import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -92,7 +95,8 @@ data class RecipeDetailActions(
     val onEdit: () -> Unit = {},
     val onDeleteClick: () -> Unit = {},
     val onRegisterAttempt: () -> Unit = {},
-    val onToggleReminder: (Long?) -> Unit = {}
+    val onToggleReminder: (Long?) -> Unit = {},
+    val onSaveCopy: () -> Unit = {}
 )
 
 @Composable
@@ -116,7 +120,8 @@ fun RecipeDetailRoute(
             onEdit = { state.recipe?.let { onEdit(it.id) } },
             onDeleteClick = { showDeleteDialog = true },
             onRegisterAttempt = { state.recipe?.let { onRegisterAttempt(it.id) } },
-            onToggleReminder = viewModel::onToggleReminder
+            onToggleReminder = viewModel::onToggleReminder,
+            onSaveCopy = viewModel::onSaveCopy
         )
     )
 
@@ -207,31 +212,19 @@ private fun RecipeDetailContent(
             )
         }
 
-        // Portada: la foto de la receta si la tiene (es opcional); si no, un recuadro con un ícono.
-        // clip y no solo background: así la foto también respeta las esquinas redondeadas.
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(180.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
+        // Título del plato: grande y sobre un recuadro de color, así se distingue sin foto de portada.
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.primaryContainer
         ) {
-            if (recipe.photoUrl != null) {
-                AsyncImage(
-                    model = recipe.photoUrl,
-                    contentDescription = "Portada de ${recipe.name}",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Outlined.Restaurant,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(36.dp)
-                )
-            }
+            Text(
+                text = recipe.name,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 28.dp),
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -242,7 +235,6 @@ private fun RecipeDetailContent(
                 )
                 Pill(text = stringResource(R.string.detail_own_recipe), container = MaterialTheme.colorScheme.primaryContainer)
             }
-            Text(text = recipe.name, style = MaterialTheme.typography.headlineMedium)
             if (recipe.description.isNotBlank()) {
                 Text(
                     text = recipe.description,
@@ -253,6 +245,44 @@ private fun RecipeDetailContent(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Pill(text = "${recipe.prepTimeMinutes} min", container = MaterialTheme.colorScheme.surface, bordered = true)
                 Pill(text = servingsText(recipe.servings), container = MaterialTheme.colorScheme.surface, bordered = true)
+            }
+
+            if (recipe.id.startsWith("comm_") || recipe.visibility == Visibility.PUBLIC) {
+                Spacer(Modifier.height(4.dp))
+                Button(
+                    onClick = actions.onSaveCopy,
+                    enabled = !state.isSavingCopy && !state.copySaved && !state.alreadySaved,                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    if (state.isSavingCopy) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else if (state.copySaved || state.alreadySaved) {                        Icon(
+                            imageVector = Icons.Filled.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            stringResource(
+                                if (state.copySaved) R.string.detail_copy_saved_success
+                                else R.string.detail_already_saved
+                            )
+                        )                    } else {
+                        Icon(
+                            imageVector = Icons.Outlined.BookmarkBorder,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.detail_btn_save_copy))
+                    }
+                }
             }
         }
 

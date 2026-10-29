@@ -82,13 +82,20 @@
     <string name="link_import_url_label">URL del video o receta</string>
     <string name="link_import_btn_extract">Extraer con IA</string>
     <string name="link_import_extracting">Extrayendo receta con IA…</string>
-    <string name="link_import_extracted_title">¡Receta extraída! Revisá antes de guardar.</string>
+    <string name="link_import_extracted_title">¡Receta extraída! Revisá antes de continuar.</string>
     <string name="link_import_name">Nombre</string>
     <string name="link_import_servings">Porciones</string>
     <string name="link_import_prep_time">Tiempo (min)</string>
+    <string name="link_import_origin">Origen</string>
     <string name="link_import_ingredients">Ingredientes</string>
     <string name="link_import_steps">Pasos</string>
-    <string name="link_import_edit_hint">Podés editar los detalles en el formulario después de confirmar.</string>
+    <string name="link_import_btn_save">Guardar</string>
+    <string name="link_import_btn_edit">Editar</string>
+    <string name="link_import_btn_try_another">Probar otra receta</string>
+    <string name="link_import_saving">Guardando receta…</string>
+    <string name="link_import_saved_success">¡Receta guardada con éxito!</string>
+    <string name="link_import_already_saved_banner">Ya tenés esta receta guardada en tu cuaderno.</string>
+    <string name="link_import_edit_hint">Podés guardar directamente, editar los detalles o probar con otro enlace.</string>
     <string name="link_import_confirm">Confirmar y editar</string>
     <string name="link_import_retry_link">Intentar con otro link</string>
     <string name="link_import_error_title">No se pudo extraer la receta</string>
@@ -103,6 +110,9 @@
     <string name="detail_visibility_public">Pública</string>
     <string name="detail_visibility_private">Privada</string>
     <string name="detail_own_recipe">Receta propia</string>
+    <string name="detail_btn_save_copy">Guardar en mis recetas</string>
+    <string name="detail_copy_saved_success">¡Receta guardada en tu cuaderno!</string>
+    <string name="detail_already_saved">Ya está en tus recetas</string>
     <string name="detail_ingredients_title">Ingredientes</string>
     <string name="detail_steps_title">Paso a paso</string>
     <string name="detail_steps_count_one">1 paso</string>
@@ -281,4 +291,22 @@
     <string name="auth_btn_login">Entrar a mi recetario</string>
     <string name="auth_btn_register">Crear mi cuenta</string>
     <string name="auth_terms_notice">Al continuar aceptás los Términos y la Política de privacidad. Tus recetas son privadas por defecto.</string>
+    <!-- Logros -->
+    <string name="ach_title">Mis logros</string>
+    <string name="ach_subtitle">Cada receta y cada intento suma.</string>
+    <string name="ach_summary_count">%1$d de %2$d</string>
+    <string name="ach_summary_label">logros desbloqueados</string>
+    <string name="ach_notifications_text">Activá las notificaciones para que te avisemos cuando consigas un logro.</string>
+    <string name="ach_notifications_button">Activar</string>
+    <string name="ach_unlocked">Conseguido</string>
+    <string name="ach_first_recipe_title">Primera receta</string>
+    <string name="ach_first_recipe_desc">Guardá tu primera receta.</string>
+    <string name="ach_full_notebook_title">Un cuaderno lleno</string>
+    <string name="ach_full_notebook_desc">Guardá 10 recetas.</string>
+    <string name="ach_world_kitchens_title">Cocinas del mundo</string>
+    <string name="ach_world_kitchens_desc">Guardá recetas de 5 países distintos.</string>
+    <string name="ach_first_attempt_title">Manos a la obra</string>
+    <string name="ach_first_attempt_desc">Registrá tu primer intento de cocina.</string>
+    <string name="ach_learning_title">Aprender cocinando</string>
+    <string name="ach_learning_desc">Registrá 10 intentos de cocina.</string>
 </resources>

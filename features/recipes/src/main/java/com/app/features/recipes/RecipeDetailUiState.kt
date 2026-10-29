@@ -15,5 +15,9 @@ data class RecipeDetailUiState(
     val isDeleting: Boolean = false,
     /** La pantalla lo observa: cuando pasa a true, vuelve atrás. */
     val deleted: Boolean = false,
+    val isSavingCopy: Boolean = false,
+    val copySaved: Boolean = false,
+    /** True si el usuario ya tiene una copia de esta receta en su recetario. */
+    val alreadySaved: Boolean = false,
     val error: DomainError? = null
 )

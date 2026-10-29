@@ -82,13 +82,20 @@
     <string name="link_import_url_label">Video or recipe URL</string>
     <string name="link_import_btn_extract">Extract with AI</string>
     <string name="link_import_extracting">Extracting recipe with AI…</string>
-    <string name="link_import_extracted_title">Recipe extracted! Review before saving.</string>
+    <string name="link_import_extracted_title">Recipe extracted! Review before continuing.</string>
     <string name="link_import_name">Name</string>
     <string name="link_import_servings">Servings</string>
     <string name="link_import_prep_time">Time (min)</string>
+    <string name="link_import_origin">Origin</string>
     <string name="link_import_ingredients">Ingredients</string>
     <string name="link_import_steps">Steps</string>
-    <string name="link_import_edit_hint">You can edit details in the form after confirming.</string>
+    <string name="link_import_btn_save">Save</string>
+    <string name="link_import_btn_edit">Edit</string>
+    <string name="link_import_btn_try_another">Try another recipe</string>
+    <string name="link_import_saving">Saving recipe…</string>
+    <string name="link_import_saved_success">Recipe saved successfully!</string>
+    <string name="link_import_already_saved_banner">You already have this recipe saved in your notebook.</string>
+    <string name="link_import_edit_hint">You can save directly, edit details or try another link.</string>
     <string name="link_import_confirm">Confirm and edit</string>
     <string name="link_import_retry_link">Try with another link</string>
     <string name="link_import_error_title">Could not extract recipe</string>
@@ -103,6 +110,9 @@
     <string name="detail_visibility_public">Public</string>
     <string name="detail_visibility_private">Private</string>
     <string name="detail_own_recipe">Own recipe</string>
+    <string name="detail_btn_save_copy">Save to my recipes</string>
+    <string name="detail_already_saved">Already in your recipes</string>
+    <string name="detail_copy_saved_success">Recipe saved to your notebook!</string>
     <string name="detail_ingredients_title">Ingredients</string>
     <string name="detail_steps_title">Step by step</string>
     <string name="detail_steps_count_one">1 step</string>
@@ -281,4 +291,22 @@
     <string name="auth_btn_login">Sign in to my recipe book</string>
     <string name="auth_btn_register">Create my account</string>
     <string name="auth_terms_notice">By continuing you accept Terms and Privacy Policy. Your recipes are private by default.</string>
+    <!-- Achievements -->
+    <string name="ach_title">My achievements</string>
+    <string name="ach_subtitle">Every recipe and every attempt counts.</string>
+    <string name="ach_summary_count">%1$d of %2$d</string>
+    <string name="ach_summary_label">achievements unlocked</string>
+    <string name="ach_notifications_text">Turn on notifications so we can tell you when you earn an achievement.</string>
+    <string name="ach_notifications_button">Turn on</string>
+    <string name="ach_unlocked">Unlocked</string>
+    <string name="ach_first_recipe_title">First recipe</string>
+    <string name="ach_first_recipe_desc">Save your first recipe.</string>
+    <string name="ach_full_notebook_title">A full notebook</string>
+    <string name="ach_full_notebook_desc">Save 10 recipes.</string>
+    <string name="ach_world_kitchens_title">World kitchens</string>
+    <string name="ach_world_kitchens_desc">Save recipes from 5 different countries.</string>
+    <string name="ach_first_attempt_title">Hands on</string>
+    <string name="ach_first_attempt_desc">Log your first cooking attempt.</string>
+    <string name="ach_learning_title">Learning by cooking</string>
+    <string name="ach_learning_desc">Log 10 cooking attempts.</string>
 </resources>

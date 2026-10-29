@@ -9,7 +9,8 @@ import javax.inject.Inject
 
 class SaveRecipeUseCase @Inject constructor(
     private val recipeRepository: RecipeRepository,
-    private val photoStorage: PhotoStorage
+    private val photoStorage: PhotoStorage,
+    private val getAchievements: GetAchievementsUseCase
 ) {
     /**
      * @param newCoverUri portada recién elegida (URI temporal de la cámara o la galería). Si viene,
@@ -33,6 +34,9 @@ class SaveRecipeUseCase @Inject constructor(
             clean
         }
 
-        return recipeRepository.saveRecipe(withCover)
+        val saved = recipeRepository.saveRecipe(withCover)
+        // Si con esta receta se desbloqueó un logro, se avisa con una notificación
+        if (saved is AppResult.Success) getAchievements()
+        return saved
     }
 }

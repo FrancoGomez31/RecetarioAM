@@ -17,6 +17,7 @@ import com.app.features.map.MapRoute
 import com.app.features.map.MapViewModel
 import com.app.features.recipes.AttemptRoute
 import com.app.features.recipes.AttemptViewModel
+import com.app.features.recipes.IngredientInput
 import com.app.features.recipes.LinkImportRoute
 import com.app.features.recipes.LinkImportViewModel
 import com.app.features.recipes.PlacePickerViewModel
@@ -26,6 +27,9 @@ import com.app.features.recipes.RecipeFormRoute
 import com.app.features.recipes.RecipeFormViewModel
 import com.app.features.recipes.RecipesRoute
 import com.app.features.recipes.RecipesViewModel
+import com.app.features.recipes.achievements.AchievementsRoute
+import com.app.features.recipes.achievements.AchievementsViewModel
+import com.app.features.recipes.StepInput
 import com.app.features.recipes.explore.ExploreRoute
 import com.app.features.recipes.explore.ExploreViewModel
 import com.app.recetario.ui.ComingSoonScreen
@@ -59,15 +63,23 @@ fun AppNavDisplay(
             LinkImportRoute(
                 viewModel = viewModel,
                 onBack = { navigationState.goBackFrom(LinkImportDestination) },
-                onConfirm = { formState ->
+                onEdit = { formState ->
                     navigationState.navigate(
                         RecipeFormDestination(
                             prefillName = formState.name,
+                            prefillDescription = formState.description,
                             prefillServings = formState.servings,
-                            prefillPrepTime = formState.prepTime
+                            prefillPrepTime = formState.prepTime,
+                            prefillCity = formState.city,
+                            prefillCountry = formState.country,
+                            prefillRestaurant = formState.restaurant,
+                            prefillPhotoUrl = formState.coverUri,
+                            prefillIngredients = formState.ingredients.map { "${it.quantity}|${it.name}" },
+                            prefillSteps = formState.steps.map { it.text }
                         )
                     )
-                }
+                },
+                onSaved = { navigationState.goBackFrom(LinkImportDestination) }
             )
         }
 
@@ -86,6 +98,12 @@ fun AppNavDisplay(
                 viewModel = viewModel,
                 onRecipeClick = { id -> navigationState.navigate(RecipeDetailDestination(id)) }
             )
+        }
+
+        entry<AchievementsDestination> {
+            val viewModel: AchievementsViewModel = hiltViewModel()
+            LaunchedEffect(Unit) { viewModel.load() }
+            AchievementsRoute(viewModel = viewModel)
         }
 
         entry<AccountDestination> {
@@ -115,11 +133,28 @@ fun AppNavDisplay(
             LaunchedEffect(key) {
                 if (key.recipeId != null) {
                     viewModel.start(key.recipeId)
-                } else if (key.prefillName.isNotBlank()) {
+                } else if (key.prefillName.isNotBlank() || key.prefillIngredients.isNotEmpty()) {
+                    val ingredients = key.prefillIngredients.map { item ->
+                        val parts = item.split("|", limit = 2)
+                        IngredientInput(
+                            id = 0L,
+                            quantity = parts.getOrElse(0) { "" },
+                            name = parts.getOrElse(1) { "" }
+                        )
+                    }
+                    val steps = key.prefillSteps.map { StepInput(0L, it) }
+
                     viewModel.prefill(
                         name = key.prefillName,
                         servings = key.prefillServings,
-                        prepTime = key.prefillPrepTime
+                        prepTime = key.prefillPrepTime,
+                        description = key.prefillDescription,
+                        city = key.prefillCity,
+                        country = key.prefillCountry,
+                        restaurant = key.prefillRestaurant,
+                        photoUrl = key.prefillPhotoUrl,
+                        ingredients = ingredients,
+                        steps = steps
                     )
                 } else {
                     viewModel.start(null)

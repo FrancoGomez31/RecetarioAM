@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
@@ -48,8 +47,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -57,7 +54,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import com.app.core.domain.RecipeField
 import com.app.core.domain.Visibility
 import com.app.core.ui.R
@@ -180,8 +176,6 @@ fun RecipeFormScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 FormHeader(state = state, onBack = actions.onBack)
-
-                CoverSection(state = state, actions = actions)
 
                 FormField(label = stringResource(R.string.form_name_label)) {
                     val invalid = RecipeField.NAME in state.invalidFields
@@ -308,78 +302,6 @@ private fun FormHeader(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-    }
-}
-
-/** Portada opcional: la foto de la receta (o un lugar vacío), con cámara, galería y la opción de quitarla. */
-@Composable
-private fun CoverSection(
-    state: RecipeFormUiState,
-    actions: RecipeFormActions
-) {
-    FormField(label = stringResource(R.string.form_cover_label)) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(160.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                if (state.coverUri != null) {
-                    AsyncImage(
-                        model = state.coverUri,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Outlined.PhotoCamera,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(
-                    onClick = actions.onTakeCover,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(50)
-                ) {
-                    Text(if (state.coverUri == null) stringResource(R.string.form_cover_take) else stringResource(R.string.form_cover_retake))
-                }
-                OutlinedButton(
-                    onClick = actions.onPickCoverFromGallery,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(50)
-                ) {
-                    Text(stringResource(R.string.form_cover_gallery))
-                }
-            }
-
-            if (state.coverUri != null) {
-                TextButton(onClick = actions.onRemoveCover) {
-                    Text(stringResource(R.string.form_cover_remove))
-                }
-            }
-
-            if (state.coverMessage != null) {
-                Text(
-                    text = state.coverMessage,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            } else {
-                Text(
-                    text = stringResource(R.string.form_cover_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
     }
 }
 

@@ -16,6 +16,8 @@ data object MapDestination : NavKey
 @Serializable
 data object ExploreDestination : NavKey
 
+@Serializable
+data object AchievementsDestination : NavKey
 // Pantallas que se abren encima de una pestaña (ahí la barra inferior se oculta sola)
 @Serializable
 data object AccountDestination : NavKey
@@ -31,7 +33,14 @@ data class RecipeFormDestination(
     // Campos pre-llenados cuando viene del flujo de importar por link
     val prefillName: String = "",
     val prefillServings: String = "",
-    val prefillPrepTime: String = ""
+    val prefillPrepTime: String = "",
+    val prefillDescription: String = "",
+    val prefillCity: String = "",
+    val prefillCountry: String = "",
+    val prefillRestaurant: String = "",
+    val prefillPhotoUrl: String? = null,
+    val prefillIngredients: List<String> = emptyList(),
+    val prefillSteps: List<String> = emptyList()
 ) : NavKey
 
 /** Registrar un intento de cocinar una receta: fotos por paso, comparación y nota. */

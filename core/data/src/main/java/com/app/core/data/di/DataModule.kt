@@ -11,6 +11,7 @@ import com.app.core.data.SharedPreferencesUserPreferencesRepository
 import com.app.core.data.firestore.FirestoreAttemptRepository
 import com.app.core.data.firestore.FirestoreRecipeRepository
 import com.app.core.data.reminder.AndroidReminderScheduler
+import com.app.core.data.achievements.AndroidAchievementNotifier
 import com.app.core.domain.AttemptRepository
 import com.app.core.domain.AuthRepository
 import com.app.core.domain.LocationProvider
@@ -22,11 +23,13 @@ import com.app.core.domain.RecipeRepository
 import com.app.core.domain.ReminderScheduler
 import com.app.core.domain.UserLocationCache
 import com.app.core.domain.UserPreferencesRepository
+import com.app.core.domain.AchievementNotifier
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -64,4 +67,7 @@ abstract class DataModule {
 
     @Binds @Singleton
     abstract fun bindNetworkMonitor(impl: ConnectivityNetworkMonitor): NetworkMonitor
+
+    @Binds @Singleton
+    abstract fun bindAchievementNotifier(impl: AndroidAchievementNotifier): AchievementNotifier
 }
