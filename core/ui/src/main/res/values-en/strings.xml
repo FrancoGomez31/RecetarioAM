@@ -202,6 +202,8 @@
     <string name="explore_filter_country_all">All</string>
     <string name="explore_empty_title">No recipes found for your search</string>
     <string name="explore_empty_desc">Try searching for other ingredients, dishes or countries.</string>
+    <string name="explore_searching_ai">Searching recipes…</string>
+    <string name="explore_load_more">Show more results</string>
     <string name="explore_card_servings">serv.</string>
     <string name="explore_card_attempts">attempts</string>
 
