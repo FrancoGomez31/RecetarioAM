@@ -1,6 +1,5 @@
 package com.app.features.recipes.explore
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,14 +16,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -35,13 +36,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import com.app.core.domain.Recipe
 import com.app.core.domain.originLabel
 import com.app.core.ui.R
@@ -57,6 +55,8 @@ fun ExploreRoute(
     ExploreScreen(
         state = state,
         onQueryChange = viewModel::onQueryChange,
+        onSearchNow = viewModel::onSearchNow,
+        onLoadMore = viewModel::onLoadMore,
         onFilterChange = viewModel::onFilterChange,
         onCountrySelect = viewModel::onCountrySelect,
         onRecipeClick = onRecipeClick
@@ -67,6 +67,8 @@ fun ExploreRoute(
 fun ExploreScreen(
     state: ExploreUiState,
     onQueryChange: (String) -> Unit,
+    onSearchNow: () -> Unit,
+    onLoadMore: () -> Unit,
     onFilterChange: (ExploreFilter) -> Unit,
     onCountrySelect: (String?) -> Unit,
     onRecipeClick: (String) -> Unit
@@ -104,10 +106,39 @@ fun ExploreScreen(
                         }
                     },
                     singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = { onSearchNow() }),
                     shape = RoundedCornerShape(14.dp)
                 )
             }
 
+            // Estado de la búsqueda con IA
+            if (state.isSearching || state.searchError != null) {
+                item {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (state.isSearching) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp
+                            )
+                            Text(
+                                text = stringResource(R.string.explore_searching_ai),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        } else if (state.searchError != null) {
+                            Text(
+                                text = state.searchError.asMessage(),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
+            }
             // Filtros de categoría rápidos
             item {
                 Row(
@@ -199,8 +230,7 @@ fun ExploreScreen(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
-            } else if (state.visibleRecipes.isEmpty()) {
-                item {
+            } else if (state.visibleRecipes.isEmpty() && !state.isSearching) {                item {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -234,6 +264,29 @@ fun ExploreScreen(
                         recipe = recipe,
                         onClick = { onRecipeClick(recipe.id) }
                     )
+                }
+            }
+
+            // Botón para traer la página siguiente de resultados de la IA
+            if (state.canLoadMore || state.isLoadingMore) {
+                item {
+                    OutlinedButton(
+                        onClick = onLoadMore,
+                        enabled = !state.isLoadingMore,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(50)
+                    ) {
+                        if (state.isLoadingMore) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(Modifier.size(8.dp))
+                            Text(stringResource(R.string.explore_searching_ai))
+                        } else {
+                            Text(stringResource(R.string.explore_load_more))
+                        }
+                    }
                 }
             }
         }

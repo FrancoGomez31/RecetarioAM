@@ -202,6 +202,8 @@
     <string name="explore_filter_country_all">Todos</string>
     <string name="explore_empty_title">No se encontraron recetas con tu búsqueda</string>
     <string name="explore_empty_desc">Probá buscando otros ingredientes, platos o países.</string>
+    <string name="explore_searching_ai">Buscando recetas…</string>
+    <string name="explore_load_more">Ver más resultados</string>
     <string name="explore_card_servings">porc.</string>
     <string name="explore_card_attempts">intentos</string>
 

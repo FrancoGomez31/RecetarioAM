@@ -24,6 +24,8 @@ import com.app.core.domain.ReminderScheduler
 import com.app.core.domain.UserLocationCache
 import com.app.core.domain.UserPreferencesRepository
 import com.app.core.domain.AchievementNotifier
+import com.app.core.data.GeminiRecipeSearcher
+import com.app.core.domain.RecipeSearcher
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -58,6 +60,9 @@ abstract class DataModule {
 
     @Binds @Singleton
     abstract fun bindRecipeLinkExtractor(impl: GeminiLinkExtractor): RecipeLinkExtractor
+
+    @Binds @Singleton
+    abstract fun bindRecipeSearcher(impl: GeminiRecipeSearcher): RecipeSearcher
 
     @Binds @Singleton
     abstract fun bindUserLocationCache(impl: InMemoryUserLocationCache): UserLocationCache
